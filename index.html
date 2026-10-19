@@ -1,0 +1,904 @@
+<title>Boorrow</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Creepster&display=swap">
+<style>
+/* Layout: a real website. Sticky top bar with section pills, wide browse grid on desktop, one column on phones.
+   Brand: Halloween night, orange only for BOO, the main button and pumpkins. Seasons swap the tokens below. */
+:root {
+  --night: #120B1F; --night-2: #1A1129; --card: #241838; --card-2: #2D1F49; --line: #3A2A55;
+  --ghost: #F4EEFF; --mist: #B3A6D1; --accent: #FF7A1A; --ink: #1A0A02; --candle: #FFC94D;
+  --money: #9EE35A; --violet: #8B5CF6; --lav: #B9A6F2; --danger: #FF9A8A; --grave: #08040F;
+  --moon-a: #FFF8E4; --moon-b: #F2BE62; --moon-glow: 255,150,60; --sky-top: #0D0817; --sky-bot: #1B0F2B; --glow: #3B2160;
+  --f-logo: "Creepster", "Bricolage Grotesque", system-ui, sans-serif;
+  --f-ui: "Bricolage Grotesque", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --r: 18px;
+  color-scheme: dark;
+}
+:root[data-season="muertos"] {
+  --night: #130F2A; --night-2: #1B1538; --card: #261D4D; --card-2: #2F2560; --line: #403270;
+  --accent: #FFA928; --ink: #1E1002; --candle: #FFD166; --money: #7EE0B5; --violet: #E0559E; --lav: #F2A6D2;
+  --grave: #0A0720; --moon-a: #FFE9B0; --moon-b: #FFA928; --moon-glow: 255,169,40; --sky-top: #0C0920; --sky-bot: #231246; --glow: #4B1F6B;
+}
+:root[data-season="navidad"] {
+  --night: #0D1B17; --night-2: #12251F; --card: #1A3029; --card-2: #213B33; --line: #2F4F45;
+  --accent: #FF6A5E; --ink: #1F0604; --candle: #FFD36B; --money: #A5F0A0; --violet: #5BC0A0; --lav: #A9E5CF;
+  --grave: #06100D; --moon-a: #F4FBFF; --moon-b: #BFD9EC; --moon-glow: 170,210,240; --sky-top: #07110E; --sky-bot: #12302A; --glow: #1B4A3D;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; }
+body {
+  margin: 0; background: var(--night); color: var(--ghost); font-family: var(--f-ui); font-size: 15px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--night); }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--candle); }
+:focus-visible { outline: 2px solid var(--candle); outline-offset: 2px; }
+h1, h2, h3, p { margin: 0; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* ---------- sky ---------- */
+.sky { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  background: radial-gradient(120% 70% at 85% -10%, var(--glow) 0%, transparent 60%), linear-gradient(180deg, var(--sky-top) 0%, var(--night) 55%, var(--sky-bot) 100%); }
+.stars { position: absolute; inset: 0; }
+.moon { position: absolute; top: -50px; right: -30px; width: 200px; height: 200px; border-radius: 50%;
+  background: radial-gradient(circle at 38% 38%, var(--moon-a) 0%, var(--moon-b) 100%);
+  box-shadow: 0 0 80px 30px rgba(var(--moon-glow), .18), 0 0 160px 80px rgba(var(--moon-glow), .08); opacity: .9; }
+.moon::before, .moon::after { content: ""; position: absolute; border-radius: 50%; background: rgba(160,120,60,.28); }
+.moon::before { width: 36px; height: 36px; left: 52px; top: 82px; }
+.moon::after { width: 20px; height: 20px; left: 108px; top: 124px; }
+.bat { position: absolute; width: 34px; color: #07040C; animation: flap 3.2s ease-in-out infinite; }
+.bat svg { width: 100%; height: auto; display: block; }
+.bat.b1 { top: 96px; right: 160px; } .bat.b2 { top: 160px; right: 52px; width: 24px; animation-delay: -1.1s; } .bat.b3 { top: 50px; right: 240px; width: 20px; animation-delay: -2s; }
+:root:not([data-season="halloween"]) .bat { display: none; }
+.papel { position: absolute; top: 0; left: 0; right: 0; height: 44px; display: none;
+  background: repeating-linear-gradient(90deg, #FF5FA2 0 36px, #FFB020 36px 72px, #5BC8FF 72px 108px, #9EE35A 108px 144px, #B07CFF 144px 180px);
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 10px no-repeat, repeating-linear-gradient(90deg, #000 0 26px, transparent 26px 36px) bottom / 100% 34px no-repeat;
+  mask: linear-gradient(#000 0 0) top / 100% 10px no-repeat, repeating-linear-gradient(90deg, #000 0 26px, transparent 26px 36px) bottom / 100% 34px no-repeat; opacity: .55; }
+:root[data-season="muertos"] .papel { display: block; }
+@keyframes flap { 0%,100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-8px) rotate(5deg); } }
+
+/* ---------- top bar ---------- */
+.bar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 6; background: color-mix(in srgb, var(--night) 90%, transparent);
+  -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.bar-in { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding-block: 10px; }
+.logo { font-family: var(--f-logo); font-size: 38px; line-height: 1; letter-spacing: 1px; color: var(--ghost); text-shadow: 0 0 18px rgba(255,122,26,.3); margin-right: auto; }
+.logo .boo { color: var(--accent); }
+.seasonbox { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--mist); }
+.seasonbox select { background: var(--night-2); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; font-size: 13px; }
+.proto { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mist); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.nav { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; width: 100%; padding-bottom: 2px; }
+.nav::-webkit-scrollbar { display: none; }
+.navbtn { flex: none; display: inline-flex; align-items: center; gap: 7px; background: transparent; border: 1px solid transparent; border-radius: 999px; padding: 8px 14px; font-weight: 600; font-size: 14px; color: var(--mist); }
+.navbtn svg { width: 17px; height: 17px; }
+.navbtn:hover { color: var(--ghost); }
+.navbtn[aria-current="page"] { background: var(--ghost); color: var(--night); }
+.navbtn.cta { background: var(--accent); color: var(--ink); }
+.navbtn.cta[aria-current="page"] { outline: 2px solid var(--ghost); }
+.cnt { background: var(--candle); color: var(--night); font-size: 11px; font-weight: 800; border-radius: 999px; min-width: 18px; padding: 1px 6px; text-align: center; }
+
+main { position: relative; z-index: 1; padding-block: 20px 28px; }
+.where { display: flex; align-items: center; gap: 6px; color: var(--mist); font-size: 13px; }
+.where svg { width: 14px; color: var(--accent); }
+
+/* ---------- hero ---------- */
+.hero { display: grid; grid-template-columns: 1fr; gap: 22px; padding-block: 18px 6px; }
+@media (min-width: 860px) { .hero { grid-template-columns: 1.1fr .9fr; align-items: end; gap: 40px; padding-block: 34px 10px; } }
+.hero h2 { font-size: clamp(32px, 6.4vw, 54px); line-height: 1.02; font-weight: 800; letter-spacing: -.025em; text-wrap: balance; margin: 8px 0 10px; }
+.hero h2 em { font-style: normal; color: var(--candle); }
+.hero p { color: var(--mist); max-width: 44ch; font-size: 16px; }
+.steps { display: grid; gap: 10px; counter-reset: s; }
+.step { display: grid; grid-template-columns: 34px 1fr; gap: 12px; align-items: start; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.step::before { counter-increment: s; content: counter(s); width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--violet); color: #fff; font-weight: 800; font-size: 14px; }
+.step b { display: block; font-size: 15px; }
+.step span { color: var(--mist); font-size: 13px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px 18px; color: var(--mist); font-size: 13px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line); }
+.facts span { display: inline-flex; align-items: center; gap: 6px; }
+.facts svg { width: 15px; height: 15px; color: var(--money); }
+
+/* ---------- browse tools ---------- */
+.tools { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 22px; }
+@media (min-width: 700px) { .tools { grid-template-columns: 1fr auto auto; } }
+.search { display: flex; align-items: center; gap: 10px; background: var(--night-2); border: 1px solid var(--line); border-radius: 999px; padding: 0 16px; height: 46px; min-width: 0; }
+.search svg { width: 16px; color: var(--mist); flex: none; }
+.search input { flex: 1; min-width: 0; background: none; border: 0; outline: none; height: 100%; }
+.search input::placeholder { color: var(--mist); }
+.sel { background: var(--night-2); border: 1px solid var(--line); border-radius: 999px; height: 46px; padding: 0 14px; min-width: 0; }
+.selrow { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (min-width: 700px) { .selrow { display: contents; } }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding: 14px 0 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 600; color: var(--mist); }
+.chip svg { width: 13px; height: 13px; }
+.chip small { font-weight: 600; opacity: .8; }
+.chip[aria-pressed="true"] { background: var(--ghost); color: var(--night); border-color: var(--ghost); }
+.chip.locked { border-style: dashed; }
+.wrapchips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: 12px; margin-top: 14px; }
+.card { text-align: left; background: var(--card); border: 1px solid transparent; border-radius: var(--r); padding: 10px; display: flex; flex-direction: column; gap: 8px; transition: transform .15s ease, border-color .15s ease; min-width: 0; }
+.card:hover { transform: translateY(-2px); border-color: var(--line); }
+.tile { position: relative; aspect-ratio: 1 / 1; max-width: 100%; border-radius: 12px; display: grid; place-items: center; overflow: hidden; }
+.tile > svg { width: 58%; height: auto; color: var(--ghost); filter: drop-shadow(0 6px 10px rgba(0,0,0,.35)); }
+.tile img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.badges { position: absolute; left: 8px; top: 8px; right: 8px; display: flex; flex-wrap: wrap; gap: 4px; }
+.badge { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: rgba(18,11,31,.78); color: var(--ghost); }
+.badge.hot { background: var(--candle); color: var(--night); }
+.badge.orig { background: var(--violet); color: #fff; }
+.card h3 { font-size: 15px; font-weight: 600; line-height: 1.2; }
+.meta { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; font-size: 12px; color: var(--mist); }
+.price { color: var(--ghost); font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+.price small { font-weight: 400; color: var(--mist); font-size: 12px; }
+.stars-r { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; color: var(--candle); }
+.stars-r svg { width: 12px; height: 12px; }
+.empty { grid-column: 1 / -1; text-align: center; color: var(--mist); padding: 40px 10px; }
+
+.sec { margin-top: 34px; }
+.sec-title { font-size: clamp(24px, 4vw, 32px); font-weight: 800; letter-spacing: -.02em; line-height: 1.1; text-wrap: balance; }
+.sec-sub { color: var(--mist); margin-top: 6px; max-width: 62ch; }
+.subhead { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mist); margin: 28px 0 0; }
+.soon { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 12px; }
+.soonc { text-align: left; background: transparent; border: 1.5px dashed var(--line); border-radius: var(--r); padding: 14px; display: grid; gap: 8px; min-width: 0; }
+.soonc:hover { border-color: var(--lav); }
+.soonc b { font-size: 16px; display: flex; align-items: center; gap: 8px; }
+.soonc b svg { width: 16px; color: var(--lav); }
+.soonc span { color: var(--mist); font-size: 13px; }
+.meter { height: 8px; border-radius: 999px; background: var(--night-2); border: 1px solid var(--line); overflow: hidden; }
+.meter i { display: block; height: 100%; width: var(--w, 0%); background: linear-gradient(90deg, var(--violet), var(--candle)); }
+.panel { margin-top: 16px; background: var(--card); border: 1.5px dashed var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 14px; }
+.panel h3 { font-size: 22px; font-weight: 800; }
+.panel p { color: var(--mist); max-width: 60ch; }
+.btnrow { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- forms ---------- */
+.formgrid { display: grid; grid-template-columns: 1fr; gap: 0 36px; margin-top: 18px; }
+@media (min-width: 860px) { .formgrid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; min-width: 0; }
+.field > label, .field > .lab, .lab { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mist); }
+.text { background: var(--night-2); border: 1px solid var(--line); border-radius: 12px; height: 48px; padding: 0 14px; outline: none; width: 100%; min-width: 0; }
+.text:focus { border-color: var(--candle); }
+textarea.text { height: auto; padding: 12px 14px; min-height: 84px; resize: vertical; }
+.photo { position: relative; aspect-ratio: 4 / 3; max-width: 100%; border: 1.5px dashed var(--line); border-radius: var(--r); display: grid; place-items: center; text-align: center; color: var(--mist); background: var(--night-2); overflow: hidden; cursor: pointer; }
+.photo svg { width: 28px; color: var(--accent); margin-bottom: 6px; }
+.photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.photo input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.range { width: 100%; accent-color: var(--accent); }
+.keepbox { background: var(--card); border-radius: 14px; padding: 14px; display: grid; gap: 4px; }
+.keepbox strong { font-size: 24px; color: var(--money); font-variant-numeric: tabular-nums; }
+.keepbox span { color: var(--mist); font-size: 13px; }
+.err { color: var(--danger); font-size: 13px; min-height: 1.2em; margin: -6px 0 10px; }
+.hint { color: var(--mist); font-size: 13px; }
+.check { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; color: var(--mist); }
+.check input { margin-top: 3px; accent-color: var(--accent); width: 18px; height: 18px; flex: none; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; padding: 0 26px; border: 0; border-radius: 999px; background: var(--accent); color: var(--ink); font-weight: 800; font-size: 16px; width: 100%; }
+.btn:hover { filter: brightness(1.06); }
+.btn[disabled] { opacity: .45; cursor: not-allowed; filter: none; }
+.btn.ghosty { background: transparent; color: var(--ghost); border: 1px solid var(--line); }
+.btn.small { min-height: 40px; padding: 0 16px; font-size: 14px; width: auto; }
+.btn.money { background: var(--money); color: #0B1A04; }
+.btn svg { width: 17px; height: 17px; }
+.link { background: none; border: 0; color: var(--candle); text-decoration: underline; padding: 0; font-size: 13px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
+.stepper button { width: 34px; height: 34px; border-radius: 50%; border: 0; background: var(--card-2); font-size: 18px; font-weight: 800; }
+.stepper output { min-width: 34px; text-align: center; font-weight: 800; font-variant-numeric: tabular-nums; }
+
+/* ---------- wanted / groups ---------- */
+.reqs { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 16px; }
+.req { background: var(--card); border-radius: var(--r); padding: 14px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.req h3 { font-size: 17px; font-weight: 600; }
+.req .meta { flex-wrap: wrap; justify-content: flex-start; gap: 4px 14px; }
+.asks { color: var(--candle); font-weight: 700; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; }
+.quote { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 8px; }
+.quote .ln { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; font-size: 14px; }
+.quote .ln span { color: var(--mist); }
+.quote .tot { border-top: 1px solid var(--line); padding-top: 10px; font-size: 17px; font-weight: 800; }
+.quote .us { color: var(--candle); font-size: 13px; }
+
+/* ---------- my closet ---------- */
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; background: linear-gradient(135deg, var(--card-2), var(--night-2)); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; margin-top: 18px; }
+.summary div { display: grid; gap: 2px; align-content: start; }
+.summary b { font-size: 26px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.summary b.money { color: var(--money); }
+.summary span { font-size: 12px; color: var(--mist); }
+.list { display: grid; gap: 10px; margin-top: 12px; }
+@media (min-width: 900px) { .list.two { grid-template-columns: 1fr 1fr; } }
+.item { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: start; background: var(--card); border-radius: 14px; padding: 10px; min-width: 0; }
+.item .tile { width: 64px; border-radius: 10px; }
+.item .tile > svg { width: 62%; }
+.item .body { min-width: 0; display: grid; gap: 8px; }
+.item b { font-weight: 600; }
+.item .sub { font-size: 13px; color: var(--mist); }
+.pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; padding: 3px 9px; background: var(--card-2); color: var(--lav); }
+.pill.ok { background: rgba(158,227,90,.14); color: var(--money); }
+.pill.warn { background: rgba(255,201,77,.14); color: var(--candle); }
+.pill.bad { background: rgba(255,154,138,.14); color: var(--danger); }
+.toprow { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+.track { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.track i { display: grid; gap: 4px; justify-items: center; font-style: normal; font-size: 10.5px; color: var(--mist); text-align: center; line-height: 1.15; }
+.track i::before { content: ""; width: 100%; height: 5px; border-radius: 99px; background: var(--line); }
+.track i.on { color: var(--ghost); }
+.track i.on::before { background: var(--money); }
+.track i.now::before { background: var(--candle); }
+.acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.demo { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--lav); }
+
+/* ---------- business ---------- */
+.bizgrid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 18px; }
+@media (min-width: 900px) { .bizgrid { grid-template-columns: 1fr 1fr; align-items: start; } }
+.box { background: var(--card); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.box h3 { font-size: 18px; font-weight: 800; }
+.bars { display: grid; gap: 9px; }
+.bar-row { display: grid; grid-template-columns: 110px 1fr 64px; gap: 10px; align-items: center; font-size: 13px; }
+.bar-row > span:first-child { color: var(--mist); }
+.bar-row .t { height: 14px; border-radius: 7px; background: var(--night-2); overflow: hidden; }
+.bar-row .t i { display: block; height: 100%; width: var(--w, 0%); border-radius: 7px; background: var(--lav); }
+.bar-row .t i.g { background: var(--money); } .bar-row .t i.o { background: var(--accent); } .bar-row .t i.r { background: var(--danger); }
+.bar-row output { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+.big { margin-top: 8px; font-size: 34px; font-weight: 800; color: var(--money); font-variant-numeric: tabular-nums; line-height: 1; }
+.big small { font-size: 13px; font-weight: 400; color: var(--mist); display: block; margin-top: 4px; }
+.twin { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tblwrap { overflow-x: auto; }
+.tbl { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 460px; }
+.tbl th { text-align: left; font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mist); padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.tbl td { padding: 10px; border-bottom: 1px solid var(--line); vertical-align: top; font-variant-numeric: tabular-nums; }
+.tbl td.n, .tbl th.n { text-align: right; }
+.tbl tr.sum td { font-weight: 800; border-bottom: 0; color: var(--money); }
+.switch { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.switch button { width: 52px; height: 30px; border-radius: 999px; border: 0; background: var(--line); position: relative; flex: none; }
+.switch button::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: var(--ghost); transition: transform .15s ease; }
+.switch button[aria-pressed="true"] { background: var(--money); }
+.switch button[aria-pressed="true"]::after { transform: translateX(22px); background: #0B1A04; }
+
+/* ---------- sheet ---------- */
+.scrim { position: fixed; inset: 0; z-index: 20; background: rgba(6,3,12,.7); display: flex; align-items: flex-end; justify-content: center; }
+@media (min-width: 720px) { .scrim { align-items: center; } }
+.sheet { width: 100%; max-width: 560px; max-height: 92%; overflow-y: auto; background: var(--night-2); border: 1px solid var(--line); border-bottom: 0; border-radius: 24px 24px 0 0;
+  padding: 14px max(18px, env(safe-area-inset-right, 0px)) calc(22px + env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); animation: up .28s ease-out; }
+@media (min-width: 720px) { .sheet { border-bottom: 1px solid var(--line); border-radius: 24px; max-height: 90vh; padding-bottom: 22px; } }
+@keyframes up { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+.sheet-top { position: sticky; top: -14px; z-index: 2; background: var(--night-2); padding-top: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 36px; }
+.x, .backb { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: transparent; display: grid; place-items: center; }
+.x svg, .backb svg { width: 15px; height: 15px; }
+.sheet .tile { border-radius: var(--r); margin: 6px 0 16px; aspect-ratio: 16 / 10; }
+.sheet .tile > svg { width: 34%; }
+.sheet h3 { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.1; }
+.sheet .sub { color: var(--mist); margin: 4px 0 12px; }
+.stack { display: grid; gap: 14px; }
+.lives { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--candle); background: rgba(255,201,77,.1); border-radius: 999px; padding: 5px 12px; }
+.lives svg { width: 14px; }
+.save { padding: 12px 14px; border-radius: 12px; background: var(--card); display: flex; justify-content: space-between; gap: 10px; font-size: 14px; }
+.save b { color: var(--money); }
+.receipt { border-top: 1px solid var(--line); padding-top: 12px; display: grid; gap: 7px; font-size: 14px; }
+.receipt div { display: flex; justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }
+.receipt span { color: var(--mist); }
+.receipt .tot { font-size: 17px; font-weight: 800; border-top: 1px solid var(--line); padding-top: 9px; }
+.receipt .tot span { color: var(--ghost); }
+.receipt .hold { color: var(--mist); }
+.disc { background: var(--card); border-radius: 12px; padding: 4px 14px; font-size: 14px; }
+.disc summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
+.disc ul { margin: 0 0 12px; padding-left: 18px; color: var(--mist); display: grid; gap: 4px; }
+.note { font-size: 12px; color: var(--mist); text-align: center; }
+.done { text-align: center; display: grid; gap: 12px; justify-items: center; padding: 8px 0 2px; }
+.done .floaty { width: 96px; color: var(--ghost); animation: floaty 2.6s ease-in-out infinite; filter: drop-shadow(0 0 24px rgba(244,238,255,.35)); }
+.done .floaty svg { width: 100%; height: auto; display: block; }
+@keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.done p { color: var(--mist); max-width: 40ch; }
+.slots { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.slot { aspect-ratio: 4 / 3; border: 1.5px dashed var(--line); border-radius: 14px; background: var(--card); display: grid; place-items: center; align-content: center; gap: 4px; color: var(--mist); font-size: 13px; font-weight: 600; }
+.slot svg { width: 24px; height: 24px; }
+.slot.got { border-style: solid; border-color: var(--money); color: var(--money); background: rgba(158,227,90,.08); }
+.rate { display: flex; gap: 6px; justify-content: center; }
+.rate button { background: none; border: 0; color: var(--line); padding: 4px; }
+.rate button.on { color: var(--candle); }
+.rate svg { width: 30px; height: 30px; }
+
+/* ---------- chat ---------- */
+.chat { display: grid; gap: 8px; max-height: 44vh; overflow-y: auto; padding: 4px 2px; }
+.msg { max-width: 82%; padding: 9px 13px; border-radius: 16px; font-size: 14px; background: var(--card-2); justify-self: start; }
+.msg.me { justify-self: end; background: var(--violet); color: #fff; }
+.msg.sys { justify-self: center; max-width: 100%; background: transparent; border: 1px dashed var(--line); color: var(--mist); font-size: 12px; text-align: center; }
+.chatbar { display: flex; gap: 8px; }
+.chatbar .text { height: 44px; }
+.chatbar .btn { width: auto; min-height: 44px; padding: 0 18px; }
+.qr { display: flex; flex-wrap: wrap; gap: 6px; }
+.qr .chip { font-size: 12px; padding: 5px 10px; }
+
+/* ---------- footer, toast ---------- */
+.foot { position: relative; z-index: 1; margin-top: 30px; }
+.grave { display: block; width: 100%; height: 120px; color: var(--grave); }
+.foot-in { background: var(--grave); padding-block: 8px 34px; color: var(--mist); font-size: 13px; display: grid; gap: 6px; }
+.foot-in b { color: var(--ghost); }
+.toast { position: fixed; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px); z-index: 30; background: var(--ghost); color: var(--night); font-weight: 700; font-size: 14px; padding: 11px 18px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity .2s ease, transform .2s ease; max-width: calc(100% - 32px); text-align: center; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .bat, .done .floaty, .sheet { animation: none; } .card, .toast, .switch button::after { transition: none; } }
+@media (max-width: 480px) { .bar-row { grid-template-columns: 92px 1fr 58px; } .twin { grid-template-columns: 1fr; } }
+</style>
+<style>
+.star-dot { position: absolute; width: 2px; height: 2px; border-radius: 50%; background: var(--ghost); opacity: .5; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.kicker { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--lav); }
+.gaps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.gaps li { background: var(--night-2); border-radius: 12px; padding: 10px 12px; font-size: 14px; color: var(--mist); }
+.gaps li b { color: var(--ghost); display: block; }
+.small { font-size: 13px; color: var(--mist); }
+</style>
+<div class="sky" aria-hidden="true">
+  <div class="papel"></div>
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+  <div class="bat b1"><svg viewBox="0 0 34 16" fill="currentColor"><path d="M17 3c-1 0-1.6 1-2 2-2-2-5-3-8-2 2 1 3 3 2 5-3-1-6 0-7 2 3 0 5 1 6 3 1-1 3-1 4 0 1 2 2 3 5 3s4-1 5-3c1-1 3-1 4 0 1-2 3-3 6-3-1-2-4-3-7-2-1-2 0-4 2-5-3-1-6 0-8 2-.4-1-1-2-2-2z"/></svg></div>
+  <div class="bat b2"><svg viewBox="0 0 34 16" fill="currentColor"><path d="M17 3c-1 0-1.6 1-2 2-2-2-5-3-8-2 2 1 3 3 2 5-3-1-6 0-7 2 3 0 5 1 6 3 1-1 3-1 4 0 1 2 2 3 5 3s4-1 5-3c1-1 3-1 4 0 1-2 3-3 6-3-1-2-4-3-7-2-1-2 0-4 2-5-3-1-6 0-8 2-.4-1-1-2-2-2z"/></svg></div>
+  <div class="bat b3"><svg viewBox="0 0 34 16" fill="currentColor"><path d="M17 3c-1 0-1.6 1-2 2-2-2-5-3-8-2 2 1 3 3 2 5-3-1-6 0-7 2 3 0 5 1 6 3 1-1 3-1 4 0 1 2 2 3 5 3s4-1 5-3c1-1 3-1 4 0 1-2 3-3 6-3-1-2-4-3-7-2-1-2 0-4 2-5-3-1-6 0-8 2-.4-1-1-2-2-2z"/></svg></div>
+</div>
+
+<header class="bar">
+  <div class="wrap bar-in">
+    <div class="logo" aria-label="Boorrow"><span class="boo">Boo</span>rrow</div>
+    <span class="proto">Prototype · no real payments</span>
+    <label class="seasonbox">Season
+      <select id="season" aria-label="Season theme"></select>
+    </label>
+    <nav class="nav" id="nav" aria-label="Main"></nav>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+
+<footer class="foot">
+  <svg class="grave" viewBox="0 0 1200 120" preserveAspectRatio="xMidYMax slice" fill="currentColor" aria-hidden="true">
+    <path d="M0 120V96c120-10 240 6 360-2s240-10 360 0 300 8 480-4v30z"/>
+    <path d="M70 120V74a22 22 0 0144 0v46z"/><path d="M250 120V66a26 26 0 0152 0v54z"/>
+    <path d="M520 120V80a18 18 0 0136 0v40z"/><path d="M742 120V60a28 28 0 0156 0v60z"/>
+    <path d="M980 120V76a20 20 0 0140 0v44z"/><path d="M1110 120V70a20 20 0 0140 0v50z"/>
+    <path d="M410 120V84h-14v-8h14V64h8v12h14v8h-14v36z"/>
+  </svg>
+  <div class="foot-in"><div class="wrap">
+    <b>Here lies: a $120 costume, worn once.</b>
+    <span>Boorrow is a class-pitch prototype for El Paso &amp; Juárez. Listings, people and money here are examples; every number follows the revenue plan's assumptions, not real sales.</span>
+  </div></div>
+</footer>
+
+<div id="layer"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+(function () {
+'use strict';
+/* ---------- config: every number mirrors the Boorrow Revenue Plan ---------- */
+const CFG = { fee: .20, protect: 2.5, depositPct: .40, depositMin: 10, extraDay: .5, lateFee: 5, lostDays: 5, cap: 150, cardPct: .03, cardFix: .30, featured: 4, suggestPct: .30, unlockAt: 10, cover: 25 };
+const KEY = 'boorrow_site_v1';
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const m = n => (n < 0 ? '-' : '') + '$' + Math.abs(n).toFixed(2).replace(/\.00$/, '');
+const r0 = n => Math.round(n).toLocaleString('en-US');
+
+/* ---------- icons (own set) ---------- */
+const UI = {
+  pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 0114 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  shield: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check: '<path d="M5 12l5 5 9-10"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  hanger: '<path d="M12 8a2.5 2.5 0 10-2.5-2.5M12 8v2L3 17h18l-9-7"/>',
+  chart: '<path d="M4 20V4M4 20h16M8 16v-5M12 16V8M16 16v-3"/>',
+  bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 016 0"/>',
+  mega: '<path d="M4 10v4h3l7 4V6L7 10z"/><path d="M17 9a4 4 0 010 6"/>',
+  people: '<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.5 3-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14c2.5 0 4 2 4 5"/>',
+  tag: '<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
+  send: '<path d="M4 12l16-8-6 16-3-7z"/>',
+  bell: '<path d="M6 17V11a6 6 0 0112 0v6l2 2H4z"/><path d="M10 21h4"/>'
+};
+const ui = (n, c) => '<svg class="' + (c || '') + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + UI[n] + '</svg>';
+const STAR = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 7 7 .6-5.3 4.7 1.7 7.2L12 17.8 5.6 21.5l1.7-7.2L2 9.6 9 9z"/></svg>';
+const COS = {
+  hat: '<path d="M30 6c4 0 8 8 10 20l5 15H18l6-17c1-10 3-18 6-18z"/><path d="M6 46c8-6 44-6 52 0 0 8-52 8-52 0z"/><path d="M20 38h26v5H20z" fill="var(--accent)"/>',
+  ghost: '<path d="M10 58V28a22 22 0 0144 0v30l-7-6-7 6-8-6-8 6-7-6z"/><circle cx="24" cy="29" r="4.5" fill="var(--night)"/><circle cx="40" cy="29" r="4.5" fill="var(--night)"/><ellipse cx="32" cy="42" rx="4" ry="5.5" fill="var(--night)"/>',
+  skull: '<path d="M32 5C18 5 9 15 9 28c0 8 4 12 9 14v11h8v-5h4v5h4v-5h4v5h8V42c5-2 9-6 9-14C55 15 46 5 32 5z"/><circle cx="23" cy="28" r="6" fill="var(--night)"/><circle cx="41" cy="28" r="6" fill="var(--night)"/><path d="M32 35l-4 8h8z" fill="var(--night)"/>',
+  cape: '<path d="M18 7q14 6 28 0l12 49q-26-9-52 0z"/><path d="M18 7l14 20 14-20-5-2-9 10-9-10z" fill="var(--accent)"/><circle cx="32" cy="28" r="3" fill="var(--candle)"/>',
+  pumpkin: '<ellipse cx="32" cy="38" rx="25" ry="19" fill="var(--accent)"/><path d="M32 20c-7 2-11 10-11 18s4 15 11 17c7-2 11-9 11-17s-4-16-11-18z" fill="#000" fill-opacity=".14"/><rect x="29" y="8" width="6" height="13" rx="2" fill="#6BBF4E"/><path d="M19 32l8 3-8 4zM45 32l-8 3 8 4zM21 46q11 8 22 0-11 3-22 0z" fill="var(--night)"/>',
+  mask: '<path d="M7 20q25-12 50 0v10q0 18-25 24Q7 48 7 30z"/><ellipse cx="22" cy="30" rx="7" ry="5" fill="var(--night)"/><ellipse cx="42" cy="30" rx="7" ry="5" fill="var(--night)"/><path d="M32 34l-3 8h6z" fill="var(--night)" fill-opacity=".6"/>',
+  ears: '<path d="M7 50L11 9l17 17z"/><path d="M57 50L53 9 36 26z"/><rect x="7" y="44" width="50" height="9" rx="4.5"/><path d="M13 22l3-8 6 6zM51 22l-3-8-6 6z" fill="var(--accent)"/>',
+  crown: '<path d="M7 50V19l15 14 10-20 10 20 15-14v31z"/><circle cx="7" cy="17" r="3.5" fill="var(--candle)"/><circle cx="32" cy="11" r="3.5" fill="var(--candle)"/><circle cx="57" cy="17" r="3.5" fill="var(--candle)"/><rect x="7" y="43" width="50" height="7" fill="var(--accent)"/>',
+  santa: '<path d="M10 49C10 20 28 8 46 12c-6 6-4 14 8 37z" fill="#E5483A"/><rect x="6" y="44" width="52" height="11" rx="5.5"/><circle cx="47" cy="12" r="6.5"/>',
+  dress: '<path d="M25 5h14l-2 16 16 36H11l16-36z"/><path d="M24 21h16" stroke="var(--accent)" stroke-width="4" fill="none"/>',
+  wings: '<path d="M30 30C8 2 5 22 6 32c2 10 14 12 24 8z"/><path d="M34 30c22-28 25-8 24 2-2 10-14 12-24 8z"/><rect x="29" y="22" width="6" height="28" rx="3" fill-opacity=".7"/>',
+  sombrero: '<ellipse cx="32" cy="46" rx="29" ry="8"/><path d="M19 46q0-33 13-33t13 33z"/><path d="M19 38h26" stroke="var(--accent)" stroke-width="5" fill="none"/>'
+};
+const cos = n => '<svg viewBox="0 0 64 64" fill="currentColor" aria-hidden="true">' + (COS[n] || COS.ghost) + '</svg>';
+const PUMPKIN_SM = '<svg viewBox="0 0 64 64" width="96" height="96" aria-hidden="true">' + COS.pumpkin + '</svg>';
+
+/* ---------- seasons ---------- */
+const SEAS = {
+  halloween: { name: 'Halloween', h: 'Be anything this Halloween. <em>Don’t buy it.</em>', p: 'Rent a costume from a neighbor in El Paso or Juárez who already owns it. Chat, meet, wear it, bring it back.', pick: ['Thu Oct 29', 'Fri Oct 30'], date: 'Sat Oct 31' },
+  muertos: { name: 'Día de Muertos', h: 'Honor the night. <em>Borrow</em> the Catrina.', p: 'Catrina dresses, charro suits and calavera looks from families who already own them.', pick: ['Fri Oct 30', 'Sun Nov 1'], date: 'Nov 1–2' },
+  navidad: { name: 'Navidad', h: 'Santa is <em>on loan</em> this year.', p: 'Santa suits, elves and posada outfits for one night, not another year on a closet shelf.', pick: ['Wed Dec 23', 'Thu Dec 24'], date: 'Dec 24' }
+};
+const SOON = [
+  { k: 'muertos', n: 'Día de Muertos', real: true },
+  { k: 'navidad', n: 'Navidad: Santa & elves', real: true },
+  { k: 'quince', n: 'Quinceañeras', have: 1, why: 'Gowns worn once, then stored for decades.' },
+  { k: 'cosplay', n: 'Cosplay & conventions', have: 3, why: 'Cosplay clubs own huge wardrobes and rent them to no one.' }
+];
+
+/* ---------- seed data ---------- */
+const L = [
+  { id: 'l1', n: 'Witch Hat & Cloak Set', c: 'Witches & wizards', s: 'M', p: 14, r: 75, o: 'Mariela G.', a: 'Kern Place', rt: 4.9, rv: 23, i: 'hat', h: 275, f: 1, seas: ['halloween'], d: 1.2, desc: 'Velvet cloak with hood, pointed hat with buckle. Dry-cleaned between renters.' },
+  { id: 'l2', n: 'Classic Vampire Cape', c: 'Monsters & undead', s: 'L', p: 12, r: 60, o: 'Diego R.', a: 'Sunset Heights', rt: 4.8, rv: 17, i: 'cape', h: 350, seas: ['halloween'], d: 2.1, desc: 'Satin-lined cape with high collar and a clasp. Fangs not included.' },
+  { id: 'l3', n: 'Glow Ghost Sheet Deluxe', c: 'Monsters & undead', s: 'M', p: 9, r: 40, o: 'Paola S.', a: 'Central El Paso', rt: 4.7, rv: 9, i: 'ghost', h: 230, seas: ['halloween'], d: 3.4, desc: 'Glow-in-the-dark trim, easy to move in, fits over a jacket.' },
+  { id: 'l4', n: 'Skeleton Bodysuit', c: 'Monsters & undead', s: 'M', p: 15, r: 70, o: 'Chuy A.', a: 'Downtown', rt: 4.9, rv: 31, i: 'skull', h: 200, seas: ['halloween', 'muertos'], d: 0.8, desc: 'Full-body print, stretches well. Pairs with calavera face paint for Día de Muertos.' },
+  { id: 'l5', n: 'Catrina Dress + Flower Crown', c: 'Día de Muertos', s: 'S', p: 20, r: 120, o: 'Lupita V.', a: 'Segundo Barrio', rt: 5, rv: 14, i: 'dress', h: 330, f: 1, seas: ['halloween', 'muertos'], d: 1.9, desc: 'Hand-sewn dress with embroidered hem, marigold crown and lace gloves.' },
+  { id: 'l6', n: 'Charro Suit', c: 'Día de Muertos', s: 'M', p: 25, r: 150, o: 'Rigo T.', a: 'Lower Valley', rt: 4.9, rv: 11, i: 'sombrero', h: 30, seas: ['halloween', 'muertos'], d: 6.5, desc: 'Black wool jacket and pants with silver botonadura. Sombrero included.' },
+  { id: 'l7', n: 'Cat Ears & Tail Set', c: 'Witches & wizards', s: 'S', p: 6, r: 25, o: 'Sofi M.', a: 'Westside', rt: 4.6, rv: 38, i: 'ears', h: 300, seas: ['halloween'], d: 5.2, desc: 'Headband and clip-on tail. The cheapest way to be something tonight.' },
+  { id: 'l8', n: 'Pumpkin Patch Kid (6–8 yrs)', c: 'Kids', s: 'Kids', p: 10, r: 45, o: 'Ana L.', a: 'Northeast', rt: 4.8, rv: 21, i: 'pumpkin', h: 25, seas: ['halloween'], d: 7.0, desc: 'Padded pumpkin tunic and green hat. Kids outgrow it every year, so we lend it.' },
+  { id: 'l9', n: 'Fairy Wings & Dress', c: 'Kids', s: 'Kids', p: 12, r: 55, o: 'Karla N.', a: 'Mission Valley', rt: 4.7, rv: 12, i: 'wings', h: 180, seas: ['halloween'], d: 4.4, desc: 'Tulle dress with glitter wings for ages 7–9. Wings are washed after each use.' },
+  { id: 'l10', n: 'Phantom Half Mask & Cape', c: 'Monsters & undead', s: 'M', p: 11, r: 50, o: 'Iván C.', a: 'Kern Place', rt: 4.5, rv: 6, i: 'mask', h: 260, seas: ['halloween'], d: 1.5, desc: 'Porcelain-look half mask, black cape and white gloves.' },
+  { id: 'l11', n: 'Zombie Doctor Scrubs', c: 'Monsters & undead', s: 'L', p: 13, r: 55, o: 'Beto F.', a: 'Central El Paso', rt: 4.6, rv: 8, i: 'skull', h: 110, seas: ['halloween'], d: 3.0, desc: 'Pre-stained scrubs, bloody name tag and a stethoscope.' },
+  { id: 'l12', n: 'Royal Crown & Robe', c: 'Royalty & fantasy', s: 'L', p: 18, r: 90, o: 'Daniela P.', a: 'Upper Valley', rt: 4.8, rv: 15, i: 'crown', h: 45, seas: ['halloween', 'muertos'], d: 5.8, desc: 'Red velvet robe with faux-fur trim, gold crown. Works for kings, queens and chess boards.' },
+  { id: 'l13', n: 'Pet Pumpkin Vest (dog M)', c: 'Pets', s: 'Pet', p: 5, r: 20, o: 'Marco J.', a: 'Westside', rt: 4.9, rv: 27, i: 'pumpkin', h: 15, seas: ['halloween'], d: 4.9, desc: 'Velcro vest, fits dogs 15–25 lb. Treat-friendly fabric.' },
+  { id: 'l14', n: 'Dracula & Bride Couples Set', c: 'Couples & groups', s: 'L', p: 26, r: 130, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.9, rv: 40, i: 'cape', h: 340, orig: 1, seas: ['halloween'], d: 0.9, desc: 'Two full outfits, one booking. Owned and cleaned by Boorrow, so it is always in stock.' },
+  { id: 'l15', n: 'Inflatable Pumpkin Suit', c: 'Monsters & undead', s: 'XL', p: 19, r: 85, o: 'Yoli B.', a: 'Eastside', rt: 4.4, rv: 5, i: 'pumpkin', h: 35, seas: ['halloween'], d: 8.3, desc: 'Battery fan inflates it in seconds. Great photos, hard to sit in.' },
+  { id: 'l16', n: 'Mummy Wrap Kit', c: 'Monsters & undead', s: 'M', p: 8, r: 30, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.7, rv: 22, i: 'ghost', h: 60, orig: 1, seas: ['halloween'], d: 0.9, desc: 'Washable wraps plus a stitched base layer. Boorrow-owned.' },
+  { id: 'l17', n: 'Wizard Robe & Staff', c: 'Witches & wizards', s: 'XL', p: 15, r: 80, o: 'Gabo H.', a: 'Central El Paso', rt: 4.8, rv: 10, i: 'hat', h: 240, seas: ['halloween'], d: 2.7, desc: 'Starry robe, pointed hat and a light-up staff.' },
+  { id: 'l18', n: 'Calavera Poncho', c: 'Día de Muertos', s: 'M', p: 14, r: 60, o: 'Rosa E.', a: 'Segundo Barrio', rt: 4.8, rv: 7, i: 'skull', h: 310, seas: ['muertos'], d: 2.2, desc: 'Embroidered calavera poncho in wool blend.' },
+  { id: 'l19', n: 'Soldadera Dress & Rebozo', c: 'Día de Muertos', s: 'M', p: 18, r: 85, o: 'Elena Q.', a: 'Lower Valley', rt: 4.9, rv: 4, i: 'dress', h: 20, seas: ['muertos'], d: 6.1, desc: 'Period-style dress with rebozo and a straw hat.' },
+  { id: 'l20', n: 'Alebrije Wings', c: 'Día de Muertos', s: 'S', p: 16, r: 70, o: 'Hugo K.', a: 'Westside', rt: 4.7, rv: 3, i: 'wings', h: 150, seas: ['muertos'], d: 5.0, desc: 'Hand-painted wings in alebrije patterns.' },
+  { id: 'l21', n: 'Santa Suit (Adult L)', c: 'Navidad', s: 'L', p: 18, r: 70, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.9, rv: 12, i: 'santa', h: 5, orig: 1, seas: ['navidad'], d: 0.9, desc: 'Full suit with belt, boots covers and beard. Boorrow stocks this so December is never empty.' },
+  { id: 'l22', n: 'Elf Costume (Kids 8–10)', c: 'Navidad', s: 'Kids', p: 10, r: 40, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.8, rv: 6, i: 'hat', h: 130, orig: 1, seas: ['navidad'], d: 0.9, desc: 'Green tunic, striped tights and a pointed cap.' }
+];
+function seedState() {
+  return {
+    season: 'halloween', cat: 'All', q: '', size: 'any', sort: 'near',
+    mine: [{ id: 'm1', n: 'Gothic Lace Dress & Veil', c: 'Witches & wizards', s: 'M', p: 16, r: 85, o: 'You', a: 'Your neighborhood', rt: 0, rv: 0, i: 'dress', h: 285, seas: ['halloween'], d: .5, desc: 'Black lace dress with a long veil. Worn twice.', mine: 1 }],
+    bookings: [
+      { id: 'b1', role: 'renter', who: 'Diego R.', name: 'Classic Vampire Cape', i: 'cape', h: 350, price: 12, retail: 60, days: 2, pick: 'Thu Oct 29', protect: true, status: 'confirmed', late: 0, lost: 0, damage: 0, photos: [false, false], rating: 0, result: null, orig: 0, msgs: [{ f: 'sys', t: 'Diego accepted your request. Agree on a public pickup spot here.' }, { f: 'them', t: 'Hey! I can meet Thursday after 5 at the Kern Place library lot.' }] },
+      { id: 'b2', role: 'owner', who: 'Ana R.', name: 'Gothic Lace Dress & Veil', i: 'dress', h: 285, price: 16, retail: 85, days: 1, pick: 'Fri Oct 30', protect: true, status: 'requested', late: 0, lost: 0, damage: 0, photos: [false, false], rating: 0, result: null, orig: 0, msgs: [{ f: 'sys', t: 'Ana wants to rent your dress for Friday. Accept to confirm the booking.' }, { f: 'them', t: 'Hi! Is the veil long enough to cover my shoulders?' }] }
+    ],
+    wanted: [
+      { id: 'w1', n: 'Santa suit, adult L', who: 'Luis M.', seas: 'Navidad', by: 'Dec 23', budget: 25, asks: 4 },
+      { id: 'w2', n: 'Catrina dress, size S', who: 'Brenda T.', seas: 'Día de Muertos', by: 'Nov 1', budget: 30, asks: 3 },
+      { id: 'w3', n: 'Elf costume, kids 8–10', who: 'Marisol D.', seas: 'Navidad', by: 'Dec 20', budget: 15, asks: 2 },
+      { id: 'w4', n: 'Charro suit, XL', who: 'Tomás V.', seas: 'Día de Muertos', by: 'Oct 31', budget: 35, asks: 1 }
+    ],
+    meToo: {}, notify: {}, partner: false, ledger: [], nid: 100,
+    grp: { type: 'Theater group', n: 12, days: 2, tier: 18, prot: true },
+    biz: { price: 18, days: 1, prot: true, kit: false, kitCost: 3, L: 250, per: 2, ticket: 18, uptake: 70, lost: 2, feat: 10, anchor: true, units: 20, grpOn: true, grpN: 6, preset: 'base' }
+  };
+}
+let S;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) { S = null; }
+if (!S || !S.biz) S = seedState();
+S.view = 'browse';
+function save() { try { const c = Object.assign({}, S); delete c.view; localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) { /* storage unavailable */ } }
+
+/* ---------- money logic ---------- */
+function deposit(retail) { const v = Math.min(retail, CFG.cap); return Math.max(CFG.depositMin, Math.round(v * CFG.depositPct / 5) * 5); }
+function rentalOf(price, days) { return price * (1 + CFG.extraDay * (days - 1)); }
+function unit(price, days, prot, kit, orig) {
+  const rental = rentalOf(price, days), protAmt = prot ? CFG.protect : 0, charged = rental + protAmt;
+  const owner = orig ? 0 : rental * (1 - CFG.fee), comm = rental - owner, gross = comm + protAmt;
+  const card = charged * CFG.cardPct + CFG.cardFix;
+  return { rental, protAmt, charged, owner, comm, gross, card, kit: kit || 0, net: gross - card - (kit || 0) };
+}
+function settle(b) {
+  const dep = deposit(b.retail), lateN = Math.min(b.late, CFG.lostDays), late = lateN * CFG.lateFee;
+  let toOwner, cost = 0, refund;
+  if (b.lost) { const pay = Math.min(b.retail, CFG.cap); toOwner = pay; cost = Math.max(0, pay - dep); refund = 0; }
+  else { const cover = b.protect ? Math.min(b.damage, CFG.cover) : 0; const fromDep = Math.min(dep, late + b.damage - cover); cost = cover; refund = dep - fromDep; toOwner = fromDep + cover; }
+  return { dep, late, toOwner, refund, cost };
+}
+const allItems = () => L.concat(S.mine);
+const itemById = id => allItems().find(x => x.id === id);
+const seasItems = () => allItems().filter(x => x.seas.indexOf(S.season) > -1);
+const countFor = k => allItems().filter(x => x.seas.indexOf(k) > -1).length;
+
+/* ---------- small renderers ---------- */
+function tile(it, badges) {
+  const bg = 'background:linear-gradient(145deg,hsl(' + it.h + ' 42% 30%),hsl(' + it.h + ' 48% 14%))';
+  return '<div class="tile" style="' + bg + '">' + (it.photo ? '<img src="' + esc(it.photo) + '" alt="">' : cos(it.i)) + (badges ? '<div class="badges">' + badges + '</div>' : '') + '</div>';
+}
+function rating(it) { return it.rv ? '<span class="stars-r">' + STAR + it.rt.toFixed(1) + ' <span style="color:var(--mist)">(' + it.rv + ')</span></span>' : '<span class="small">New</span>'; }
+function card(it) {
+  const b = (it.f ? '<span class="badge hot">Featured</span>' : '') + (it.orig ? '<span class="badge orig">Boorrow original</span>' : '') + (it.mine ? '<span class="badge">Yours</span>' : '');
+  return '<button class="card" data-act="open" data-id="' + it.id + '">' + tile(it, b) + '<h3>' + esc(it.n) + '</h3><div class="meta"><span>' + esc(it.s) + ' · ' + it.d.toFixed(1) + ' mi</span>' + rating(it) + '</div><div class="price">' + m(it.p) + ' <small>/ day</small></div></button>';
+}
+let toastT;
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => el.classList.remove('show'), 2600); }
+
+/* ---------- chrome: nav, season, sky ---------- */
+const NAV = [['browse', 'Browse', 'bag'], ['wanted', 'Wanted', 'mega'], ['groups', 'Groups & events', 'people'], ['list', 'List a costume', 'plus'], ['closet', 'My closet', 'hanger'], ['biz', 'Business', 'chart']];
+function renderNav() {
+  const active = S.bookings.filter(b => b.status !== 'settled').length;
+  $('#nav').innerHTML = NAV.map(n => '<button class="navbtn' + (n[0] === 'list' ? ' cta' : '') + '" data-act="nav" data-v="' + n[0] + '"' + (S.view === n[0] ? ' aria-current="page"' : '') + '>' + ui(n[2]) + n[1] + (n[0] === 'closet' && active ? ' <span class="cnt">' + active + '</span>' : '') + '</button>').join('');
+}
+function applySeason() { document.documentElement.setAttribute('data-season', S.season); }
+function buildSeasonSelect() {
+  $('#season').innerHTML = Object.keys(SEAS).map(k => '<option value="' + k + '"' + (S.season === k ? ' selected' : '') + '>' + SEAS[k].name + '</option>').join('');
+}
+(function stars() {
+  let h = ''; for (let i = 0; i < 46; i++) { h += '<i class="star-dot" style="left:' + ((i * 53 + 11) % 100) + '%;top:' + ((i * 37 + 7) % 70) + '%;opacity:' + (0.2 + ((i * 7) % 6) / 10) + '"></i>'; }
+  $('#stars').innerHTML = h;
+})();
+
+/* ---------- views ---------- */
+const V = {};
+const SIZES = [['any', 'Any size'], ['S', 'Small'], ['M', 'Medium'], ['L', 'Large / XL'], ['Kids', 'Kids'], ['Pet', 'Pets']];
+const SORTS = [['near', 'Closest first'], ['plo', 'Price: low to high'], ['phi', 'Price: high to low'], ['top', 'Top rated']];
+
+function filtered() {
+  const q = S.q.trim().toLowerCase();
+  let a = seasItems().filter(x => (S.cat === 'All' || x.c === S.cat) && (S.size === 'any' || (S.size === 'L' ? (x.s === 'L' || x.s === 'XL') : x.s === S.size)) && (!q || (x.n + ' ' + x.c + ' ' + x.desc).toLowerCase().indexOf(q) > -1));
+  const f = { near: (x, y) => x.d - y.d, plo: (x, y) => x.p - y.p, phi: (x, y) => y.p - x.p, top: (x, y) => y.rt - x.rt }[S.sort];
+  a.sort((x, y) => (y.f ? 1 : 0) - (x.f ? 1 : 0) || f(x, y));
+  return a;
+}
+function gridHtml() {
+  const a = filtered();
+  if (!a.length) return '<div class="empty">No costumes match. Try another category, or <button class="link" data-act="nav" data-v="wanted">post a Wanted request</button> and owners will see it.</div>';
+  return a.map(card).join('');
+}
+V.browse = function () {
+  const se = SEAS[S.season], n = countFor(S.season);
+  const cats = ['All'].concat(Array.from(new Set(seasItems().map(x => x.c))));
+  if (cats.indexOf(S.cat) < 0) S.cat = 'All';
+  let h = '<div class="where">' + ui('pin') + ' El Paso · Juárez · pickup in a public place</div>';
+  h += '<section class="hero"><div><div class="kicker">' + se.name + ' · ' + se.date + '</div><h2>' + se.h + '</h2><p>' + se.p + '</p>' +
+    '<div class="facts"><span>' + ui('check') + 'Owners keep 80%</span><span>' + ui('shield') + 'Refundable deposit</span><span>' + ui('clock') + '48-hour return window</span><span>' + ui('lock') + 'Chat and pay in-app</span></div></div>' +
+    '<ol class="steps" style="list-style:none;margin:0;padding:0"><li class="step"><div><b>Find it</b><span>Browse what neighbors already own, from $5 a day.</span></div></li><li class="step"><div><b>Chat and book</b><span>Agree on a pickup spot. Deposit is held, not charged.</span></div></li><li class="step"><div><b>Wear it, return it</b><span>Photos at handoff protect both sides. Deposit comes back.</span></div></li></ol></section>';
+  if (n < CFG.unlockAt) {
+    h += '<div class="panel"><div class="kicker">Season warming up</div><h3>' + se.name + ' opens to everyone at ' + CFG.unlockAt + ' listings</h3><div class="meter" style="--w:' + Math.min(100, n / CFG.unlockAt * 100) + '%"><i></i></div><p>' + n + ' of ' + CFG.unlockAt + ' listed so far (' + allItems().filter(x => x.orig && x.seas.indexOf(S.season) > -1).length + ' stocked by Boorrow so you are never staring at an empty shelf). Own something that fits? List it. Need something? Ask for it.</p><div class="btnrow"><button class="btn small" data-act="nav" data-v="list">' + ui('plus') + 'List one I own</button><button class="btn small ghosty" data-act="nav" data-v="wanted">' + ui('mega') + 'Post a request</button><button class="btn small ghosty" data-act="notify" data-k="' + S.season + '">' + ui('bell') + (S.notify[S.season] ? 'You will be notified' : 'Tell me when it opens') + '</button></div></div>';
+  }
+  h += '<div class="tools"><label class="search">' + ui('search') + '<span class="sr">Search costumes</span><input id="q" type="search" placeholder="Search witch, vampire, Catrina..." value="' + esc(S.q) + '" autocomplete="off"></label><div class="selrow"><select class="sel" id="size" aria-label="Size">' + SIZES.map(x => '<option value="' + x[0] + '"' + (S.size === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select><select class="sel" id="sort" aria-label="Sort">' + SORTS.map(x => '<option value="' + x[0] + '"' + (S.sort === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></div></div>';
+  h += '<div class="chips" role="group" aria-label="Categories">' + cats.map(c => '<button class="chip" data-act="cat" data-c="' + esc(c) + '" aria-pressed="' + (S.cat === c) + '">' + esc(c) + (c !== 'All' ? ' <small>' + seasItems().filter(x => x.c === c).length + '</small>' : '') + '</button>').join('') + '</div>';
+  h += '<div class="grid" id="grid">' + gridHtml() + '</div>';
+  h += '<div class="sec"><h2 class="sec-title">Opening soon</h2><p class="sec-sub">A category opens once it has ' + CFG.unlockAt + ' real listings. Until then it stays out of the way, and you can help it open.</p><div class="soon">' +
+    SOON.map(s => { const c = s.real ? countFor(s.k) : s.have; return '<button class="soonc" data-act="soon" data-k="' + s.k + '"><b>' + ui('lock') + esc(s.n) + '</b><div class="meter" style="--w:' + Math.min(100, c / CFG.unlockAt * 100) + '%"><i></i></div><span>' + c + ' of ' + CFG.unlockAt + ' listed</span></button>'; }).join('') + '</div></div>';
+  return h;
+};
+
+V.wanted = function () {
+  let h = '<div class="kicker">Wanted board</div><h2 class="sec-title">Can’t find it? Ask for it.</h2><p class="sec-sub">When people ask for something nobody has listed, owners get nudged. Three or more asks for the same thing and we message every owner with a close match.</p>';
+  h += '<div class="btnrow" style="margin-top:14px"><button class="btn small ghosty" data-act="nudge">Preview the Nov 1 “list yours” nudge</button></div>';
+  h += '<div class="formgrid"><div><h3 class="sec-title" style="font-size:20px;margin:18px 0 12px">Post a request</h3>' +
+    '<div class="field"><label for="wn">What do you need?</label><input class="text" id="wn" placeholder="Santa suit, adult L"></div>' +
+    '<div class="field"><label for="wb">By when?</label><input class="text" id="wb" placeholder="Dec 23"></div>' +
+    '<div class="field"><label for="wp">Budget per rental ($)</label><input class="text" id="wp" type="number" inputmode="numeric" min="5" max="100" placeholder="25"></div><div class="err" id="werr"></div>' +
+    '<button class="btn" data-act="post-wanted">' + ui('mega') + 'Post request</button></div>';
+  h += '<div><h3 class="sec-title" style="font-size:20px;margin:18px 0 0">Open requests</h3><div class="reqs" style="grid-template-columns:1fr">' + S.wanted.map(w => {
+    const hot = w.asks >= 3;
+    return '<div class="req"><div class="toprow"><span class="pill ' + (hot ? 'warn' : '') + '">' + (hot ? 'Hot: owners nudged' : esc(w.seas)) + '</span><span class="asks">' + w.asks + ' asking</span></div><h3>' + esc(w.n) + '</h3><div class="meta"><span>' + esc(w.who) + '</span><span>Needed by ' + esc(w.by) + '</span><span>Up to ' + m(w.budget) + '/rental</span></div><div class="btnrow"><button class="btn small" data-act="have" data-id="' + w.id + '">I have this</button><button class="btn small ghosty" data-act="metoo" data-id="' + w.id + '"' + (S.meToo[w.id] ? ' disabled' : '') + '>' + (S.meToo[w.id] ? 'You asked too' : '+1 me too') + '</button></div></div>';
+  }).join('') + '</div></div></div>';
+  return h;
+};
+
+function quote() {
+  const g = S.grp, rental = rentalOf(g.tier, g.days) * g.n, disc = g.n >= 25 ? .15 : g.n >= 10 ? .10 : 0;
+  const after = rental * (1 - disc), prot = g.prot ? CFG.protect * g.n : 0, dep = deposit(g.tier / CFG.suggestPct) * g.n;
+  const comm = after * CFG.fee, card = (after + prot) * CFG.cardPct + CFG.cardFix;
+  return { rental, disc, after, prot, dep, total: after + prot, boor: comm + prot - card };
+}
+V.groups = function () {
+  const g = S.grp, q = quote();
+  let h = '<div class="kicker">Groups &amp; events</div><h2 class="sec-title">Dress the whole cast.</h2><p class="sec-sub">Theaters, schools, churches, cosplay clubs and family reunions get one quote, one pickup and one deposit instead of fifteen separate chats.</p><div class="formgrid"><div>' +
+    '<div class="field"><label for="gt">Who is it for?</label><select class="text" id="gt" data-in="gtype">' + ['Theater group', 'School', 'Church / posada', 'Cosplay club', 'Family reunion', 'Friends group'].map(x => '<option' + (g.type === x ? ' selected' : '') + '>' + x + '</option>').join('') + '</select></div>' +
+    '<div class="field"><span class="lab">Costumes needed</span><div class="stepper"><button data-act="gn" data-d="-1" aria-label="Fewer">−</button><output>' + g.n + '</output><button data-act="gn" data-d="1" aria-label="More">+</button></div></div>' +
+    '<div class="field"><span class="lab">Days</span><div class="stepper"><button data-act="gd" data-d="-1" aria-label="Fewer days">−</button><output>' + g.days + '</output><button data-act="gd" data-d="1" aria-label="More days">+</button></div></div>' +
+    '<div class="field"><label for="gtier">Costume level</label><select class="text" id="gtier" data-in="gtier">' + [[10, 'Budget, about $10 a day'], [18, 'Standard, about $18 a day'], [28, 'Premium, about $28 a day']].map(x => '<option value="' + x[0] + '"' + (g.tier === x[0] ? ' selected' : '') + '>' + x[1] + '</option>').join('') + '</select></div>' +
+    '<label class="check field"><input type="checkbox" data-in="gprot"' + (g.prot ? ' checked' : '') + '><span>Add renter protection for every costume (' + m(CFG.protect) + ' each)</span></label></div>' +
+    '<div><div class="quote"><div class="kicker">Your quote</div>' +
+    '<div class="ln"><span>' + g.n + ' costumes × ' + g.days + ' day' + (g.days > 1 ? 's' : '') + '</span><b>' + m(q.rental) + '</b></div>' +
+    (q.disc ? '<div class="ln"><span>Group discount ' + Math.round(q.disc * 100) + '%</span><b>−' + m(q.rental - q.after) + '</b></div>' : '<div class="ln"><span>Group discount (10+ costumes)</span><b>—</b></div>') +
+    (g.prot ? '<div class="ln"><span>Renter protection</span><b>' + m(q.prot) + '</b></div>' : '') +
+    '<div class="ln tot"><span>Charged</span><b>' + m(q.total) + '</b></div><div class="ln"><span>Deposit hold, refundable</span><b>' + m(q.dep) + '</b></div>' +
+    '<div class="us">Boorrow keeps about ' + m(q.boor) + ' after card fees. The rest goes to the owners.</div></div>' +
+    '<div class="btnrow" style="margin-top:14px"><button class="btn" data-act="quote-req">Request this quote</button></div></div></div>';
+  h += '<div class="panel"><div class="kicker">For organizations that own wardrobes</div><h3>Rent out the closet that sits empty 11 months a year</h3><p>A theater or club lists its whole wardrobe in one bulk sheet. You pick the prices, we handle the bookings and the deposits.</p><div class="btnrow"><button class="btn small' + (S.partner ? ' ghosty' : '') + '" data-act="partner">' + (S.partner ? 'Bulk-listing sheet requested' : 'Become a supply partner') + '</button></div></div>';
+  return h;
+};
+
+let pdraft = { price: '', retail: '', feat: false, ok: false, photo: '', n: '', c: 'Witches & wizards', s: 'M' };
+const CATS = ['Witches & wizards', 'Monsters & undead', 'Royalty & fantasy', 'Kids', 'Pets', 'Couples & groups', 'Día de Muertos', 'Navidad'];
+V.list = function () {
+  const d = pdraft;
+  return '<div class="kicker">List a costume</div><h2 class="sec-title">Your closet is already a business.</h2><p class="sec-sub">You keep 80% of every rental. Boorrow holds a deposit from the renter before anything leaves your hands.</p><div class="formgrid"><div>' +
+    '<div class="field"><span class="lab">Photo</span><label class="photo" id="ph">' + (d.photo ? '<img src="' + esc(d.photo) + '" alt="Your costume">' : '<div>' + ui('camera') + '<div>Tap to add a photo</div></div>') + '<input type="file" accept="image/*" data-in="photo" aria-label="Costume photo"></label></div>' +
+    '<div class="field"><label for="ln">Name</label><input class="text" id="ln" data-in="lname" placeholder="Vampire cape with collar" value="' + esc(d.n) + '"></div>' +
+    '<div class="field"><label for="lc">Category</label><select class="text" id="lc" data-in="lcat">' + CATS.map(c => '<option' + (d.c === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></div>' +
+    '<div class="field"><label for="ls">Size</label><select class="text" id="ls" data-in="lsize">' + ['S', 'M', 'L', 'XL', 'Kids', 'Pet'].map(c => '<option' + (d.s === c ? ' selected' : '') + '>' + c + '</option>').join('') + '</select></div></div>' +
+    '<div><div class="field"><label for="lr">What did it cost you? ($)</label><input class="text" id="lr" type="number" inputmode="numeric" min="5" data-in="lretail" placeholder="75" value="' + esc(d.retail) + '"></div><div id="listout">' + listOut() + '</div>' +
+    '<div class="field"><label for="lp">Your price per day ($)</label><input class="text" id="lp" type="number" inputmode="numeric" min="3" data-in="lprice" placeholder="14" value="' + esc(d.price) + '"></div>' +
+    '<label class="check field"><input type="checkbox" data-in="lfeat"' + (d.feat ? ' checked' : '') + '><span>Feature it at the top of Browse for ' + m(CFG.featured) + '</span></label>' +
+    '<label class="check field"><input type="checkbox" data-in="lok"' + (d.ok ? ' checked' : '') + '><span>I will clean it, take handoff photos, and meet in a public place.</span></label><div class="err" id="lerr"></div>' +
+    '<button class="btn" data-act="publish">' + ui('plus') + 'Put it on Boorrow</button></div></div>';
+};
+function listOut() {
+  const d = pdraft, r = parseFloat(d.retail) || 0, p = parseFloat(d.price) || 0;
+  let h = '';
+  if (r) h += '<div class="hint" style="margin:-4px 0 14px">Suggested price: <b style="color:var(--ghost)">' + m(Math.max(3, Math.round(r * CFG.suggestPct))) + ' / day</b> (about ' + Math.round(CFG.suggestPct * 100) + '% of what you paid). Deposit: ' + m(deposit(r)) + '.' + (r > CFG.cap ? ' Coverage is capped at ' + m(CFG.cap) + ' for launch.' : '') + '</div>';
+  h += '<div class="keepbox"><span>You keep per rental day</span><strong>' + m(p * (1 - CFG.fee)) + '</strong><span>Boorrow takes ' + Math.round(CFG.fee * 100) + '%: ' + m(p * CFG.fee) + '</span></div><div style="height:16px"></div>';
+  return h;
+}
+V.closet = function () {
+  const mineB = S.bookings.filter(b => b.role === 'owner'), rent = S.bookings.filter(b => b.role === 'renter');
+  const earned = S.bookings.filter(b => b.role === 'owner' && b.status === 'settled').reduce((t, b) => t + rentalOf(b.price, b.days) * (1 - CFG.fee) + (b.result ? b.result.toOwner : 0), 0);
+  const act = S.bookings.filter(b => b.status !== 'settled').length;
+  const row = b => {
+    const idx = STATUS.indexOf(b.status);
+    return '<div class="item"><div class="tile" style="background:linear-gradient(145deg,hsl(' + b.h + ' 42% 30%),hsl(' + b.h + ' 48% 14%))">' + cos(b.i) + '</div><div class="body"><div class="toprow"><b>' + esc(b.name) + '</b><span class="pill ' + (b.status === 'settled' ? 'ok' : 'warn') + '">' + STATUS_L[idx] + '</span></div><div class="sub">' + (b.role === 'owner' ? 'Rented by ' : 'From ') + esc(b.who) + ' · ' + b.days + ' day' + (b.days > 1 ? 's' : '') + ' · ' + esc(b.pick) + '</div>' + track(idx) + '<div class="acts"><button class="btn small" data-act="booking" data-id="' + b.id + '">Open</button></div></div></div>';
+  };
+  let h = '<div class="kicker">My closet</div><h2 class="sec-title">What’s out, what’s in, what you earned.</h2>' +
+    '<div class="summary"><div><b class="money">' + m(earned) + '</b><span>Earned from finished rentals</span></div><div><b>' + S.mine.length + '</b><span>Costumes listed</span></div><div><b>' + act + '</b><span>Bookings in progress</span></div></div>';
+  h += '<h3 class="subhead">Requests on my costumes</h3><div class="list two">' + (mineB.length ? mineB.map(row).join('') : '<div class="small" style="padding:12px 0">No requests yet. List something and share it.</div>') + '</div>';
+  h += '<h3 class="subhead">Costumes I’m renting</h3><div class="list two">' + (rent.length ? rent.map(row).join('') : '<div class="small" style="padding:12px 0">Nothing rented. <button class="link" data-act="nav" data-v="browse">Browse costumes</button></div>') + '</div>';
+  h += '<h3 class="subhead">My listings</h3><div class="list two">' + (S.mine.length ? S.mine.map(it => '<div class="item">' + tile(it) + '<div class="body"><div class="toprow"><b>' + esc(it.n) + '</b><span class="pill ' + (it.f ? 'warn' : '') + '">' + (it.f ? 'Featured' : 'Live') + '</span></div><div class="sub">' + m(it.p) + ' / day · you keep ' + m(it.p * (1 - CFG.fee)) + '</div><div class="acts"><button class="btn small ghosty" data-act="feature" data-id="' + it.id + '">' + (it.f ? 'Remove feature' : 'Feature for ' + m(CFG.featured)) + '</button><button class="btn small ghosty" data-act="unlist" data-id="' + it.id + '">Unlist</button></div></div></div>').join('') : '<div class="small" style="padding:12px 0">You haven’t listed anything. <button class="link" data-act="nav" data-v="list">List a costume</button></div>') + '</div>';
+  return h;
+};
+
+/* business */
+function bar(label, val, max, cls, neg) { return '<div class="bar-row"><span>' + label + '</span><div class="t"><i class="' + (cls || '') + '" style="--w:' + Math.max(0, Math.min(100, Math.abs(val) / max * 100)) + '%"></i></div><output>' + (neg ? '−' : '') + m(Math.abs(val)) + '</output></div>'; }
+function unitOut() {
+  const b = S.biz, u = unit(b.price, b.days, b.prot, b.kit ? b.kitCost : 0, false), mx = u.charged;
+  const lossRentals = u.net > 0 ? Math.ceil(65 / u.net) : null;
+  return '<div class="bars">' + bar('Renter pays', u.charged, mx, '') + bar('Owner gets', u.owner, mx, 'g') + bar('Boorrow commission', u.comm, mx, 'o') + (b.prot ? bar('Protection fee', u.protAmt, mx, 'o') : '') + bar('Card fees', u.card, mx, 'r', true) + (b.kit ? bar('Cleaning kit', u.kit, mx, 'r', true) : '') + '</div><div class="big ' + '">' + m(u.net) + '<small>Boorrow keeps per rental' + (lossRentals ? '. One $65 lost costume takes ' + lossRentals + ' rentals to earn back.' : '. Every rental loses money at these settings.') + '</small></div>';
+}
+function scn() {
+  const b = S.biz, R = b.L * b.per, u = b.uptake / 100;
+  const comm = R * b.ticket * CFG.fee, prot = R * u * CFG.protect, card = R * (b.ticket + u * CFG.protect) * CFG.cardPct + R * CFG.cardFix;
+  const kit = b.kit ? R * b.kitCost : 0, lost = R * b.lost / 100 * 65, feat = b.L * b.feat / 100 * CFG.featured;
+  const anchor = b.anchor ? b.units * 3 * b.ticket : 0, grp = b.grpOn ? b.grpN * 20 * b.ticket * 0.9 * CFG.fee : 0;
+  const rows = [['Commission (20%)', comm], ['Renter protection fees', prot], ['Featured listings', feat], ['Boorrow-owned inventory', anchor], ['Group & event quotes', grp], ['Card fees', -card], ['Lost & damaged costumes', -lost]];
+  if (b.kit) rows.push(['Cleaning kits', -kit]);
+  const net = rows.reduce((t, x) => t + x[1], 0);
+  return { R, rows, net };
+}
+function scnOut() {
+  const s = scn(); const mx = Math.max.apply(null, s.rows.map(x => Math.abs(x[1])).concat([1]));
+  return '<div class="bars">' + s.rows.map(x => bar(x[0], x[1], mx, x[1] < 0 ? 'r' : 'g', x[1] < 0)).join('') + '</div><div class="big" style="' + (s.net < 0 ? 'color:var(--danger)' : '') + '">' + (s.net < 0 ? '−' : '') + '$' + r0(Math.abs(s.net)) + '<small>' + r0(s.R) + ' rentals this season, before hosting, tools and people. Illustrative, not a forecast.</small></div>';
+}
+function ledgerOut() {
+  const b = S.biz, rows = S.ledger;
+  if (!rows.length) return '<div class="small">No finished rentals yet. Open a booking in My closet and walk it to “Settled”: every step lands here.</div>';
+  let tg = 0, tn = 0;
+  const body = rows.map(x => { const net = x.comm + x.prot - x.card - (b.kit ? b.kitCost : 0) - x.cost; tg += x.comm + x.prot; tn += net; return '<tr><td>' + esc(x.name) + (x.orig ? ' <span class="pill">own stock</span>' : '') + '</td><td class="n">' + m(x.rental) + '</td><td class="n">' + m(x.comm + x.prot) + '</td><td class="n">' + m(-x.card) + '</td><td class="n">' + m(-x.cost) + '</td><td class="n">' + m(net) + '</td></tr>'; }).join('');
+  return '<div class="tblwrap"><table class="tbl"><thead><tr><th>Booking</th><th class="n">Rental</th><th class="n">Boorrow gross</th><th class="n">Card</th><th class="n">Losses</th><th class="n">Net</th></tr></thead><tbody>' + body + '<tr class="sum"><td>Total</td><td></td><td class="n">' + m(tg) + '</td><td></td><td></td><td class="n">' + m(tn) + '</td></tr></tbody></table></div>';
+}
+function sw(label, key, on) { return '<div class="switch"><span>' + label + '</span><button data-act="bswitch" data-k="' + key + '" aria-pressed="' + on + '" aria-label="' + esc(label) + '"></button></div>'; }
+function slider(label, key, min, max, step, unitLabel) { const v = S.biz[key]; return '<div class="field" style="margin-bottom:12px"><span class="lab">' + label + ': <span data-val="' + key + '">' + (unitLabel === '$' ? '$' + v : unitLabel === '%' ? v + '%' : v) + '</span></span><input class="range" type="range" min="' + min + '" max="' + max + '" step="' + step + '" value="' + v + '" data-in="biz" data-k="' + key + '" data-u="' + unitLabel + '" aria-label="' + label + '"></div>'; }
+V.biz = function () {
+  const b = S.biz;
+  return '<div class="kicker">Founders’ view</div><h2 class="sec-title">The business, with the gaps showing.</h2><p class="sec-sub">Same numbers as the revenue plan, adjustable. The point is to show the thin margin before a judge finds it.</p>' +
+    '<div class="bizgrid"><div class="box"><h3>One rental, line by line</h3>' + slider('Rental price', 'price', 5, 40, 1, '$') + slider('Days', 'days', 1, 5, 1, '') + sw('Renter protection fee (' + m(CFG.protect) + ')', 'prot', b.prot) + sw('Cleaning kit per rental', 'kit', b.kit) + (b.kit ? slider('Kit cost', 'kitCost', 1, 6, 0.5, '$') : '') + '<div id="unitout">' + unitOut() + '</div></div>' +
+    '<div class="box"><h3>Halloween 2027, three ways</h3><div class="btnrow">' + [['low', 'Cautious'], ['base', 'Base'], ['high', 'Stretch']].map(x => '<button class="chip" data-act="preset" data-k="' + x[0] + '" aria-pressed="' + (b.preset === x[0]) + '">' + x[1] + '</button>').join('') + '</div>' + slider('Active listings', 'L', 20, 1000, 10, '') + slider('Rentals per listing', 'per', 0.5, 4, 0.1, '') + slider('Average rental ($)', 'ticket', 8, 40, 1, '$') + slider('Renters who add protection', 'uptake', 0, 100, 5, '%') + slider('Costumes lost or ruined', 'lost', 0, 10, 0.5, '%') + slider('Listings that pay to feature', 'feat', 0, 40, 1, '%') + sw('Boorrow-owned inventory (' + b.units + ' costumes, rented at 100%)', 'anchor', b.anchor) + sw('Group and event quotes (' + b.grpN + ' events)', 'grpOn', b.grpOn) + '<div id="scnout">' + scnOut() + '</div></div>' +
+    '<div class="box" style="grid-column:1/-1"><div class="toprow"><h3>Live ledger from this demo</h3><button class="btn small ghosty" data-act="reset">Reset demo</button></div><div id="ledgerout">' + ledgerOut() + '</div></div>' +
+    '<div class="box" style="grid-column:1/-1"><h3>Gaps, named, with the answer</h3><ul class="gaps">' +
+    '<li><b>Off-season shelves are empty</b>Categories unlock at ' + CFG.unlockAt + ' listings, the Wanted board collects demand, Boorrow stocks a few anchors, and Nov 1 nudges owners to list.</li>' +
+    '<li><b>People could leave the app to pay</b>Deposit, photos and protection only apply to in-app bookings. Chat warns on payment words.</li>' +
+    '<li><b>Margin per rental is thin</b>' + m(unit(18, 1, false, 0, false).net) + ' on an $18 rental under current rules, ' + m(unit(18, 1, true, 0, false).net) + ' with the protection fee. Volume and add-ons matter more than commission.</li>' +
+    '<li><b>One lost costume erases dozens of rentals</b>Deposits (about ' + Math.round(CFG.depositPct * 100) + '% of value), a ' + m(CFG.cap) + ' launch cap and ID checks limit it.</li>' +
+    '<li><b>Hygiene worries are real</b>Cleaning rules, handoff photos and ratings. A cleaning kit would make today’s margin negative, so it needs the protection fee.</li></ul></div></div>';
+};
+
+/* booking helpers */
+const STATUS = ['requested', 'confirmed', 'picked', 'returned', 'settled'];
+const STATUS_L = ['Requested', 'Confirmed', 'Picked up', 'Returned', 'Settled'];
+function track(idx) { return '<div class="track">' + STATUS_L.map((l, i) => '<i class="' + (i <= idx ? 'on' : '') + (i === idx && idx < 4 ? ' now' : '') + '">' + l + '</i>').join('') + '</div>'; }
+
+/* ---------- sheets ---------- */
+let sheet = null, lastFocus = null;
+let ck = { days: 1, pick: 0, prot: true, agree: false };
+function openSheet(s) { if (!sheet) lastFocus = document.activeElement; sheet = s; drawSheet(); }
+function closeSheet() { sheet = null; $('#layer').innerHTML = ''; if (lastFocus && lastFocus.focus) { try { lastFocus.focus(); } catch (e) { /* gone */ } } }
+function drawSheet() {
+  if (!sheet) return;
+  const keep = $('#layer .sheet') ? $('#layer .sheet').scrollTop : 0;
+  const body = { listing: sheetListing, booking: sheetBooking, soon: sheetSoon, nudge: sheetNudge, done: sheetDone }[sheet.type]();
+  $('#layer').innerHTML = '<div class="scrim" data-act="scrim"><div class="sheet" role="dialog" aria-modal="true" aria-label="' + esc(sheet.label || 'Details') + '"><div class="sheet-top"><button class="x" data-act="close" aria-label="Close">' + ui('x') + '</button><span class="demo">' + (sheet.demo || '') + '</span></div>' + body + '</div></div>';
+  const sh = $('#layer .sheet'); sh.scrollTop = keep;
+  if (!sheet.noFocus) { const f = $('.x', sh); if (f) f.focus(); }
+}
+function sheetListing() {
+  const it = itemById(sheet.id); sheet.label = it.n;
+  const se = SEAS[S.season], pk = se.pick, u = unit(it.p, ck.days, ck.prot, 0, it.orig), dep = deposit(it.r);
+  const perc = Math.round(rentalOf(it.p, ck.days) / it.r * 100);
+  let h = tile(it) + '<div class="lives">' + ui('pin') + esc(it.a) + ' · ' + it.d.toFixed(1) + ' mi</div><h3 style="margin-top:10px">' + esc(it.n) + '</h3><div class="sub">' + esc(it.o) + (it.orig ? ' · stocked and cleaned by Boorrow' : ' · ID verified') + ' · Size ' + esc(it.s) + ' · ' + rating(it) + '</div><p class="small" style="color:var(--ghost);font-size:15px">' + esc(it.desc) + '</p>';
+  if (it.mine) return h + '<div class="save" style="margin-top:14px"><span>This is your listing.</span><b>' + m(it.p) + ' / day</b></div>';
+  h += '<div class="stack" style="margin-top:14px"><div class="save"><span>New it costs about ' + m(it.r) + '. Renting is ' + perc + '% of that.</span><b>Save ' + m(it.r - rentalOf(it.p, ck.days)) + '</b></div>' +
+    '<div class="field" style="margin:0"><span class="lab">Pickup</span><div class="wrapchips">' + pk.map((p, i) => '<button class="chip" data-act="pick" data-i="' + i + '" aria-pressed="' + (ck.pick === i) + '">' + p + '</button>').join('') + '</div></div>' +
+    '<div class="field" style="margin:0"><span class="lab">Days (extra days are half price)</span><div class="stepper"><button data-act="cdays" data-d="-1" aria-label="Fewer days">−</button><output>' + ck.days + '</output><button data-act="cdays" data-d="1" aria-label="More days">+</button></div></div>' +
+    '<label class="check"><input type="checkbox" data-in="cprot"' + (ck.prot ? ' checked' : '') + '><span>Renter protection, ' + m(CFG.protect) + '. Covers minor damage up to ' + m(CFG.cover) + ' so it doesn’t come out of your deposit.</span></label>' +
+    '<div class="receipt"><div><span>' + m(it.p) + ' × ' + ck.days + ' day' + (ck.days > 1 ? 's' : '') + '</span><b>' + m(u.rental) + '</b></div>' + (ck.prot ? '<div><span>Renter protection</span><b>' + m(u.protAmt) + '</b></div>' : '') + '<div class="tot"><span>Charged when owner accepts</span><b>' + m(u.charged) + '</b></div><div class="hold"><span>Deposit hold (refundable)</span><b>' + m(dep) + '</b></div></div>' +
+    '<details class="disc"><summary>Trust check: what protects both of you</summary><ul><li>Owner is ID verified and rated by past renters.</li><li>Deposit is held, not charged. It is released within 48 hours of a clean return.</li><li>Photos at handoff and return, taken in the app.</li><li>Late return: ' + m(CFG.lateFee) + ' per day. Not returned after ' + CFG.lostDays + ' days is treated as lost, up to ' + m(CFG.cap) + ' of value.</li><li>Chat and pay in Boorrow only. Deals made outside aren’t covered.</li></ul></details>' +
+    '<label class="check"><input type="checkbox" data-in="cagree"' + (ck.agree ? ' checked' : '') + '><span>I’ll meet in a public place, return it within 48 hours, and keep payment in the app.</span></label>' +
+    '<button class="btn" data-act="book"' + (ck.agree ? '' : ' disabled') + '>Request to book · ' + m(u.charged) + '</button><div class="note">Nothing is charged until ' + esc(it.o) + ' accepts. This is a prototype: no real payment happens.</div></div>';
+  return h;
+}
+function sheetBooking() {
+  const b = S.bookings.find(x => x.id === sheet.id); sheet.label = b.name; sheet.demo = 'Demo: you can play both sides';
+  const idx = STATUS.indexOf(b.status), u = unit(b.price, b.days, b.protect, 0, b.orig), dep = deposit(b.retail), you = b.role === 'renter';
+  let h = '<h3>' + esc(b.name) + '</h3><div class="sub">' + (you ? 'Renting from ' : 'Rented by ') + esc(b.who) + ' · ' + esc(b.pick) + ' · ' + b.days + ' day' + (b.days > 1 ? 's' : '') + '</div>' + track(idx) + '<div class="stack" style="margin-top:14px">';
+  h += '<div class="receipt"><div><span>Rental</span><b>' + m(u.rental) + '</b></div>' + (b.protect ? '<div><span>Renter protection</span><b>' + m(u.protAmt) + '</b></div>' : '') + '<div class="hold"><span>Deposit hold</span><b>' + m(dep) + '</b></div>' + (b.late ? '<div><span>Late fees (' + b.late + ' day' + (b.late > 1 ? 's' : '') + ')</span><b>' + m(Math.min(b.late, CFG.lostDays) * CFG.lateFee) + '</b></div>' : '') + (b.result ? '<div class="tot"><span>Deposit refunded</span><b>' + m(b.result.refund) + '</b></div><div><span>' + (you ? 'Owner receives' : 'You receive') + ' from deposit/claims</span><b>' + m(b.result.toOwner) + '</b></div>' : '') + '</div>';
+  if (b.status === 'confirmed') h += '<div><span class="lab">Handoff photos (tap to take)</span><div class="slots" style="margin-top:8px">' + ['Full costume', 'Tag and details'].map((l, i) => '<button class="slot' + (b.photos[i] ? ' got' : '') + '" data-act="photo" data-i="' + i + '">' + (b.photos[i] ? ui('check') : ui('camera')) + l + '</button>').join('') + '</div></div>';
+  if (b.status === 'picked') h += '<div class="acts"><button class="btn small ghosty" data-act="late"' + (b.late >= CFG.lostDays ? ' disabled' : '') + '>Demo: +1 day late</button>' + (b.late >= CFG.lostDays ? '<button class="btn small ghosty" data-act="lost">Mark as lost</button>' : '') + '</div>' + (b.late ? '<div class="small">' + (b.late >= CFG.lostDays ? 'Five days late: the owner can mark it lost and claim up to ' + m(CFG.cap) + '.' : 'Late fee is ' + m(CFG.lateFee) + ' a day.') + '</div>' : '');
+  if (b.status === 'returned') h += '<div><span class="lab">Owner inspection</span><div class="wrapchips" style="margin-top:8px">' + [[0, 'All good'], [10, 'Stain $10'], [25, 'Tear $25'], [60, 'Ruined $60']].map(x => '<button class="chip" data-act="dmg" data-v="' + x[0] + '" aria-pressed="' + (b.damage === x[0]) + '">' + x[1] + '</button>').join('') + '</div></div>';
+  const a = { requested: you ? 'Demo: owner accepts' : 'Accept request', confirmed: 'Hand off and pick up', picked: 'Return the costume', returned: 'Settle and release deposit' }[b.status];
+  if (a) h += '<button class="btn" data-act="adv"' + (b.status === 'confirmed' && !(b.photos[0] && b.photos[1]) ? ' disabled' : '') + '>' + a + '</button>' + (b.status === 'confirmed' && !(b.photos[0] && b.photos[1]) ? '<div class="note">Both photos are needed before pickup.</div>' : '');
+  if (b.status === 'settled') {
+    h += b.lost ? '<div class="save"><span>Marked lost. Deposit paid to owner; Boorrow covered the rest up to the cap.</span></div>' : '<div class="save"><span>All done. Deposit released.</span><b>' + m(b.result.refund) + '</b></div>';
+    h += '<div><span class="lab">Rate ' + (you ? esc(b.who) : 'the renter') + '</span><div class="rate" role="group" aria-label="Rating" style="margin-top:6px">' + [1, 2, 3, 4, 5].map(n => '<button class="' + (b.rating >= n ? 'on' : '') + '" data-act="rate" data-n="' + n + '" aria-label="' + n + ' stars">' + STAR + '</button>').join('') + '</div></div>';
+  }
+  h += '<div><span class="lab">Chat with ' + esc(b.who) + '</span><div class="chat" id="chat" style="margin-top:8px">' + b.msgs.map(x => '<div class="msg ' + (x.f === 'me' ? 'me' : x.f === 'sys' ? 'sys' : '') + '">' + esc(x.t) + '</div>').join('') + '</div></div>' +
+    '<div class="qr">' + ['Is it still available?', 'Where should we meet?', 'Can I pay you cash?'].map(t => '<button class="chip" data-act="qr" data-t="' + esc(t) + '">' + esc(t) + '</button>').join('') + '</div>' +
+    '<form class="chatbar" data-act="chatform"><input class="text" id="cmsg" placeholder="Message" aria-label="Message" autocomplete="off"><button class="btn" type="submit" aria-label="Send">' + ui('send') + '</button></form></div>';
+  return h;
+}
+function sheetSoon() {
+  const s = SOON.find(x => x.k === sheet.k); sheet.label = s.n;
+  const c = s.real ? countFor(s.k) : s.have;
+  return '<h3>' + esc(s.n) + '</h3><div class="sub">' + c + ' of ' + CFG.unlockAt + ' listings. ' + (s.why || '') + '</div><div class="meter" style="--w:' + Math.min(100, c / CFG.unlockAt * 100) + '%;margin-bottom:16px"><i></i></div>' +
+    '<div class="kicker">Four ways to open it faster</div><ul class="gaps" style="margin:10px 0 16px"><li><b>List one you own</b>You keep 80% of every rental.</li><li><b>Post a Wanted request</b>Demand tells owners what to list.</li><li><b>Ask a club or theater</b>One bulk sheet can fill a category.</li><li><b>Boorrow stocks a few</b>Anchor pieces so it never looks empty.</li></ul>' +
+    '<div class="stack">' + (s.real ? '<button class="btn" data-act="preview" data-k="' + s.k + '">Preview ' + esc(SEAS[s.k].name) + ' season</button>' : '') + '<button class="btn' + (s.real ? ' ghosty' : '') + '" data-act="nav" data-v="list">List one I own</button><button class="btn ghosty" data-act="nav" data-v="wanted">Post a request</button><button class="btn ghosty" data-act="notify" data-k="' + s.k + '">' + (S.notify[s.k] ? 'You will be notified' : 'Tell me when it opens') + '</button></div>';
+}
+function sheetNudge() {
+  sheet.label = 'Nov 1 nudge';
+  return '<div class="kicker">Sent to every renter on Nov 1</div><h3 style="margin-top:6px">That costume is about to go in a closet for a year.</h3><div class="sub">Next season, someone wants it. List it now and earn from it.</div><div class="done">' + PUMPKIN_SM.replace('width="96" height="96"', 'class="floaty" width="96" height="96"') + '<p>Your Halloween rental history gets you a one-tap listing: photos, size and a suggested price are filled in.</p></div><div class="stack"><button class="btn" data-act="nav" data-v="list">List it now</button></div>';
+}
+function sheetDone() {
+  sheet.label = 'Request sent';
+  return '<div class="done"><div class="floaty">' + cos('ghost') + '</div><h3>Request sent</h3><p>' + esc(sheet.msg) + '</p></div><div class="stack"><button class="btn" data-act="booking" data-id="' + sheet.id + '">Open booking and chat</button></div>';
+}
+
+/* ---------- render ---------- */
+function render() {
+  applySeason(); renderNav();
+  $('#view').innerHTML = V[S.view]();
+  save();
+}
+function go(v) { S.view = v; closeSheet(); render(); window.scrollTo(0, 0); }
+
+/* ---------- actions ---------- */
+const A = {
+  nav(el) { go(el.dataset.v); },
+  cat(el) { S.cat = el.dataset.c; render(); },
+  open(el) { ck = { days: 1, pick: 0, prot: true, agree: false }; openSheet({ type: 'listing', id: el.dataset.id }); },
+  close() { closeSheet(); },
+  scrim(el, e) { if (e.target === el) closeSheet(); },
+  pick(el) { ck.pick = +el.dataset.i; sheet.noFocus = 1; drawSheet(); },
+  cdays(el) { ck.days = Math.max(1, Math.min(7, ck.days + +el.dataset.d)); sheet.noFocus = 1; drawSheet(); },
+  book() {
+    const it = itemById(sheet.id), pk = SEAS[S.season].pick[ck.pick], id = 'b' + (S.nid++);
+    S.bookings.unshift({ id, role: 'renter', who: it.o, name: it.n, i: it.i, h: it.h, price: it.p, retail: it.r, days: ck.days, pick: pk, protect: ck.prot, status: 'requested', late: 0, lost: 0, damage: 0, photos: [false, false], rating: 0, result: null, orig: it.orig ? 1 : 0, msgs: [{ f: 'sys', t: 'Request sent. ' + it.o + ' usually answers within a few hours.' }] });
+    save(); renderNav();
+    openSheet({ type: 'done', id, msg: it.o + ' has your request for ' + pk + '. You are charged only if they accept.' });
+  },
+  booking(el) { openSheet({ type: 'booking', id: el.dataset.id }); },
+  photo(el) { const b = bk(); b.photos[+el.dataset.i] = true; save(); sheet.noFocus = 1; drawSheet(); },
+  late() { const b = bk(); b.late = Math.min(CFG.lostDays, b.late + 1); save(); sheet.noFocus = 1; drawSheet(); },
+  lost() { const b = bk(); b.lost = 1; finish(b); },
+  dmg(el) { bk().damage = +el.dataset.v; sheet.noFocus = 1; drawSheet(); },
+  adv() {
+    const b = bk(), i = STATUS.indexOf(b.status);
+    if (b.status === 'returned') { finish(b); return; }
+    b.status = STATUS[i + 1];
+    const say = { confirmed: 'Request accepted. Agree on a public pickup spot here.', picked: 'Handoff photos saved for both of you. Return window: 48 hours after the event.', returned: 'Returned. Owner has 48 hours to inspect.' }[b.status];
+    if (say) b.msgs.push({ f: 'sys', t: say });
+    save(); renderNav(); sheet.noFocus = 1; drawSheet();
+  },
+  rate(el) { bk().rating = +el.dataset.n; save(); sheet.noFocus = 1; drawSheet(); },
+  qr(el) { sendMsg(el.dataset.t); },
+  chatform(el, e) { e.preventDefault(); const i = $('#cmsg'); if (i && i.value.trim()) sendMsg(i.value.trim()); },
+  soon(el) { openSheet({ type: 'soon', k: el.dataset.k }); },
+  preview(el) { S.season = el.dataset.k; S.cat = 'All'; buildSeasonSelect(); go('browse'); },
+  notify(el) { S.notify[el.dataset.k] = !S.notify[el.dataset.k]; toast(S.notify[el.dataset.k] ? 'We’ll message you when it opens.' : 'Notification off.'); if (sheet) { drawSheet(); } render(); },
+  nudge() { openSheet({ type: 'nudge' }); },
+  metoo(el) { const w = S.wanted.find(x => x.id === el.dataset.id); if (S.meToo[w.id]) return; S.meToo[w.id] = 1; w.asks++; toast(w.asks >= 3 ? 'Owners with a close match were nudged.' : 'Added. Owners will see the demand.'); render(); },
+  have(el) { const w = S.wanted.find(x => x.id === el.dataset.id); pdraft = Object.assign({}, pdraft, { n: w.n, price: String(w.budget), retail: String(Math.round(w.budget / CFG.suggestPct)) }); go('list'); },
+  'post-wanted'() {
+    const n = $('#wn').value.trim(), by = $('#wb').value.trim(), p = parseFloat($('#wp').value);
+    if (!n) { $('#werr').textContent = 'Say what you need.'; return; }
+    S.wanted.unshift({ id: 'w' + (S.nid++), n, who: 'You', seas: SEAS[S.season].name, by: by || 'Soon', budget: p > 0 ? p : 20, asks: 1 }); S.meToo[S.wanted[0].id] = 1;
+    toast('Posted. Owners will see it.'); render();
+  },
+  gn(el) { S.grp.n = Math.max(2, Math.min(60, S.grp.n + +el.dataset.d)); render(); },
+  gd(el) { S.grp.days = Math.max(1, Math.min(7, S.grp.days + +el.dataset.d)); render(); },
+  'quote-req'() { toast('Quote requested. A real person would reply in a day.'); },
+  partner() { S.partner = true; toast('Bulk-listing sheet requested.'); render(); },
+  publish() {
+    const d = pdraft, r = parseFloat(d.retail), p = parseFloat(d.price), e = $('#lerr');
+    if (!d.n.trim()) { e.textContent = 'Give it a name.'; return; }
+    if (!(r > 0)) { e.textContent = 'Add what it cost you.'; return; }
+    if (!(p > 0)) { e.textContent = 'Set a price per day.'; return; }
+    if (!d.ok) { e.textContent = 'Confirm the cleaning and handoff promise.'; return; }
+    const seas = d.c === 'Navidad' ? ['navidad'] : d.c === 'Día de Muertos' ? ['halloween', 'muertos'] : ['halloween'];
+    const icon = { 'Witches & wizards': 'hat', 'Monsters & undead': 'skull', 'Royalty & fantasy': 'crown', Kids: 'wings', Pets: 'pumpkin', 'Couples & groups': 'cape', 'Día de Muertos': 'dress', Navidad: 'santa' }[d.c];
+    S.mine.unshift({ id: 'm' + (S.nid++), n: d.n.trim(), c: d.c, s: d.s, p, r, o: 'You', a: 'Your neighborhood', rt: 0, rv: 0, i: icon, h: 285, seas, d: .5, desc: 'Listed by you.', photo: d.photo, f: d.feat ? 1 : 0, mine: 1 });
+    pdraft = { price: '', retail: '', feat: false, ok: false, photo: '', n: '', c: 'Witches & wizards', s: 'M' };
+    toast('Listed. It shows up in Browse now.'); go('closet');
+  },
+  feature(el) { const it = S.mine.find(x => x.id === el.dataset.id); it.f = it.f ? 0 : 1; render(); },
+  unlist(el) { S.mine = S.mine.filter(x => x.id !== el.dataset.id); render(); },
+  bswitch(el) { const k = el.dataset.k; S.biz[k] = !S.biz[k]; render(); },
+  preset(el) { const P = { low: [80, 1.2], base: [250, 2], high: [800, 2.8] }[el.dataset.k]; S.biz.preset = el.dataset.k; S.biz.L = P[0]; S.biz.per = P[1]; render(); },
+  reset() { S = seedState(); S.view = 'biz'; buildSeasonSelect(); toast('Demo reset.'); render(); }
+};
+function bk() { return S.bookings.find(x => x.id === sheet.id); }
+function finish(b) {
+  const r = settle(b); b.result = r; b.status = 'settled';
+  const u = unit(b.price, b.days, b.protect, 0, b.orig);
+  S.ledger.push({ id: b.id, name: b.name, orig: b.orig, rental: u.rental, comm: u.comm, prot: u.protAmt, card: u.card, cost: r.cost });
+  b.msgs.push({ f: 'sys', t: b.lost ? 'Marked lost. Deposit goes to the owner.' : 'Settled. Deposit released.' });
+  save(); renderNav(); sheet.noFocus = 1; drawSheet(); toast(b.lost ? 'Marked lost.' : 'Rental settled. See it in Business.');
+}
+function sendMsg(t) {
+  const b = bk(), id = b.id;
+  b.msgs.push({ f: 'me', t });
+  if (/venmo|zelle|cash ?app|paypal|cash\b|efectivo|wire|transfer|pay me|p[aá]game/i.test(t)) {
+    b.msgs.push({ f: 'sys', t: 'Heads up: the deposit, photos and protection only cover payments made in Boorrow. Keep it in the app.' });
+  } else {
+    setTimeout(() => { const x = S.bookings.find(y => y.id === id); if (!x) return; x.msgs.push({ f: 'them', t: /where|meet/i.test(t) ? 'The library lot on Thursday works. I’ll bring it in a garment bag.' : 'Yes, it’s available! Message me with any questions.' }); save(); if (sheet && sheet.type === 'booking' && sheet.id === id) { sheet.noFocus = 1; drawSheet(); const c = $('#chat'); if (c) c.scrollTop = c.scrollHeight; } }, 700);
+  }
+  save(); sheet.noFocus = 1; drawSheet(); const c = $('#chat'); if (c) c.scrollTop = c.scrollHeight; const i = $('#cmsg'); if (i) i.focus();
+}
+function resizePhoto(file, cb) {
+  const fr = new FileReader();
+  fr.onload = () => { const im = new Image(); im.onload = () => { const s = Math.min(1, 480 / Math.max(im.width, im.height)), c = document.createElement('canvas'); c.width = Math.round(im.width * s); c.height = Math.round(im.height * s); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); cb(c.toDataURL('image/jpeg', .7)); }; im.src = fr.result; };
+  fr.readAsDataURL(file);
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]'); if (!el) return;
+  if (el.tagName === 'FORM') return;
+  const f = A[el.dataset.act]; if (f) f(el, e);
+});
+document.addEventListener('submit', e => { const el = e.target.closest('[data-act]'); if (el && A[el.dataset.act]) A[el.dataset.act](el, e); });
+document.addEventListener('input', e => {
+  const t = e.target;
+  if (t.id === 'q') { S.q = t.value; $('#grid').innerHTML = gridHtml(); save(); return; }
+  const k = t.dataset.in; if (!k) return;
+  if (k === 'biz') {
+    const key = t.dataset.k, v = parseFloat(t.value); S.biz[key] = v;
+    $$('[data-val="' + key + '"]').forEach(s => { s.textContent = t.dataset.u === '$' ? '$' + v : t.dataset.u === '%' ? v + '%' : v; });
+    $('#unitout').innerHTML = unitOut(); $('#scnout').innerHTML = scnOut(); S.biz.preset = ''; save(); return;
+  }
+  const d = pdraft;
+  if (k === 'lname') d.n = t.value; else if (k === 'lretail') { d.retail = t.value; $('#listout').innerHTML = listOut(); } else if (k === 'lprice') { d.price = t.value; $('#listout').innerHTML = listOut(); } else if (k === 'photo' && t.files && t.files[0]) resizePhoto(t.files[0], url => { d.photo = url; render(); });
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'season') { S.season = t.value; S.cat = 'All'; render(); return; }
+  if (t.id === 'size') { S.size = t.value; $('#grid').innerHTML = gridHtml(); save(); return; }
+  if (t.id === 'sort') { S.sort = t.value; $('#grid').innerHTML = gridHtml(); save(); return; }
+  const k = t.dataset.in; if (!k) return;
+  if (k === 'cprot') { ck.prot = t.checked; sheet.noFocus = 1; drawSheet(); }
+  else if (k === 'cagree') { ck.agree = t.checked; sheet.noFocus = 1; drawSheet(); }
+  else if (k === 'gtype') { S.grp.type = t.value; save(); }
+  else if (k === 'gtier') { S.grp.tier = +t.value; render(); }
+  else if (k === 'gprot') { S.grp.prot = t.checked; render(); }
+  else if (k === 'lcat') pdraft.c = t.value;
+  else if (k === 'lsize') pdraft.s = t.value;
+  else if (k === 'lfeat') pdraft.feat = t.checked;
+  else if (k === 'lok') pdraft.ok = t.checked;
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && sheet) { closeSheet(); return; }
+  if (e.key === 'Tab' && sheet) {
+    const sh = $('#layer .sheet'); if (!sh) return;
+    const f = $$('button:not([disabled]),input,select,summary,a[href]', sh); if (!f.length) return;
+    if (e.shiftKey && document.activeElement === f[0]) { e.preventDefault(); f[f.length - 1].focus(); }
+    else if (!e.shiftKey && document.activeElement === f[f.length - 1]) { e.preventDefault(); f[0].focus(); }
+  }
+});
+
+buildSeasonSelect();
+render();
+window.__boorrow = { S: () => S, A, go };
+})();
+</script>
