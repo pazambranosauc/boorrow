@@ -358,7 +358,7 @@ textarea.text { height: auto; padding: 12px 14px; min-height: 84px; resize: vert
   </svg>
   <div class="foot-in"><div class="wrap">
     <b>Here lies: a $120 costume, worn once.</b>
-    <span>Boorrow is a class-pitch prototype for El Paso &amp; Juárez. Listings, people and money here are examples; every number follows the revenue plan's assumptions, not real sales.</span>
+    <span>Boorrow is a class-pitch prototype for El Paso &amp; Juárez. Listings, people and money here are examples; every number follows the revenue plan's assumptions, not real sales. Costume photos from Unsplash (free license); where a photo is missing, an illustration stands in.</span>
   </div></div>
 </footer>
 
@@ -454,6 +454,8 @@ const L = [
   { id: 'l21', n: 'Santa Suit (Adult L)', c: 'Navidad', s: 'L', p: 18, r: 70, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.9, rv: 12, i: 'santa', h: 5, orig: 1, seas: ['navidad'], d: 0.9, desc: 'Full suit with belt, boots covers and beard. Boorrow stocks this so December is never empty.' },
   { id: 'l22', n: 'Elf Costume (Kids 8–10)', c: 'Navidad', s: 'Kids', p: 10, r: 40, o: 'Boorrow', a: 'Pickup: Downtown', rt: 4.8, rv: 6, i: 'hat', h: 130, orig: 1, seas: ['navidad'], d: 0.9, desc: 'Green tunic, striped tights and a pointed cap.' }
 ];
+const IMG = {l1: 'photo-1601830976337-e32f60eba315', l2: 'photo-1762554559560-9373311161be', l3: 'photo-1633380170808-9404cd630e82', l4: 'photo-1635913231119-7148f7c6ad8c', l5: 'photo-1672767424445-d75e46a5e6a5', l8: 'photo-1509163245925-f4255dea7727', l9: 'photo-1549359649-0684c60d220b', l10: 'photo-1745073826490-852014999258', l11: 'photo-1759800916443-bb77e51208d0', l12: 'photo-1673278206771-6146fc7f9e13', l13: 'photo-1728866980867-54a73f5df37e', l14: 'photo-1762554560913-69d0f469768b', l15: 'photo-1684063187742-91cc555efc4e', l17: 'photo-1771148835096-b843d0b539a2', l18: 'photo-1660329713270-036f59a82733', l21: 'photo-1607715150652-6c4a5dd185e7'};
+L.forEach(x => { if (IMG[x.id]) x.img = 'https://images.unsplash.com/' + IMG[x.id] + '?auto=format&fit=crop&w=640&q=70'; });
 function seedState() {
   return {
     season: 'halloween', cat: 'All', q: '', size: 'any', sort: 'near',
@@ -503,7 +505,7 @@ const countFor = k => allItems().filter(x => x.seas.indexOf(k) > -1).length;
 /* ---------- small renderers ---------- */
 function tile(it, badges) {
   const bg = 'background:linear-gradient(145deg,hsl(' + it.h + ' 42% 30%),hsl(' + it.h + ' 48% 14%))';
-  return '<div class="tile" style="' + bg + '">' + (it.photo ? '<img src="' + esc(it.photo) + '" alt="">' : cos(it.i)) + (badges ? '<div class="badges">' + badges + '</div>' : '') + '</div>';
+  return '<div class="tile" style="' + bg + '">' + (it.photo ? '<img src="' + esc(it.photo) + '" alt="">' : cos(it.i) + (it.img ? '<img src="' + it.img + '" alt="' + esc(it.n) + '" loading="lazy" onerror="this.remove()">' : '')) + (badges ? '<div class="badges">' + badges + '</div>' : '') + '</div>';
 }
 function rating(it) { return it.rv ? '<span class="stars-r">' + STAR + it.rt.toFixed(1) + ' <span style="color:var(--mist)">(' + it.rv + ')</span></span>' : '<span class="small">New</span>'; }
 function card(it) {
